@@ -1,3 +1,4 @@
+import h5py
 import json
 from os import listdir
 import numpy as np
@@ -112,13 +113,13 @@ def get_features(model, video, annotations, batch_size, device):
     if images:
         features = predict(model, images, features, device)
 
-    return features, names
+    return features, np.array(names, dtype=object)
 
 
 if __name__ == "__main__":
     opt = Config()
 
-    # 0) Load model
+    # 1) Load model
     model = resnet_face18(False)
     model = DataParallel(model)
 
@@ -127,22 +128,32 @@ if __name__ == "__main__":
 
     model.eval()
 
-    # 1) Get video names
+    # 2) Get video names
     videos = listdir(opt.video_path)
 
-    for video_name in videos:
-        # 2) Load the annotations
-        with open(opt.annotations_path + video_name + "_people.json", "r") as f:
-            annotations = json.load(f)
+    # 3) Open the h5 file
+    with h5py.File(opt.db_path, 'a') as h5f:
 
-        # 3) load the video
-        video = cv2.VideoCapture(opt.video_path + video_name)
+        for video_name in videos:
+            if video_name in h5f:
+                print(f'OMITTING {video_name}: features are already present in the database')
+                continue
 
-        # 4) check if the video file opened successfully, if not continue with another one
-        if not video.isOpened():
-            print(f'The videofile {video_name} could not be opened!')
-            continue
+            # 3) Load the annotations
+            with open(opt.annotations_path + video_name + "_people.json", "r") as f:
+                annotations = json.load(f)
 
-        features, names = get_features(model, video, annotations, batch_size=opt.batch_size, device=opt.device)
+            # 4) load the video
+            video = cv2.VideoCapture(opt.video_path + video_name)
 
-        break
+            # 5) check if the video file opened successfully, if not continue with another one
+            if not video.isOpened():
+                print(f'The videofile {video_name} could not be opened!')
+                continue
+
+            # 6) get the features
+            features, names = get_features(model, video, annotations, batch_size=opt.batch_size, device=opt.device)
+
+            # 7) save the features and names
+            h5f.create_dataset(video_name, data=features)
+            h5f.create_dataset(video_name + ".names", data=names, dtype=h5py.special_dtype(vlen=str))

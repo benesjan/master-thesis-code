@@ -10,4 +10,4 @@ class Config:
     annotations_path = "/media/honza/My Passport/Faces/CEMI-annotations-Udalosti/"
 
     model_path = 'checkpoints/resnet18_110.pth'
-    output_dir_path = 'out/'
+    db_path = 'out/features.h5'
