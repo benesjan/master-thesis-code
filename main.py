@@ -1,9 +1,9 @@
-import h5py
 import json
 from os import listdir
-import numpy as np
 
 import cv2
+import h5py
+import numpy as np
 import torch
 from torch.nn import DataParallel
 
@@ -52,10 +52,14 @@ def process_face(im):
     im = cv2.resize(im, (128, 128))
     im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
     # The following lines are copied from arcface-pytorch project
+    # Stack image and it's flipped version. Output dimensions: (128, 128, 2)
     im = np.dstack((im, np.fliplr(im)))
+    # Transpose. Output dimensions: (2, 128, 128)
     im = im.transpose((2, 0, 1))
+    # Add dimension. Output dimensions: (2, 1, 128, 128)
     im = im[:, np.newaxis, :, :]
     im = im.astype(np.float32, copy=False)
+    # Normalize to <-1, 1>
     im -= 127.5
     im /= 127.5
     return im
