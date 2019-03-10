@@ -1,9 +1,16 @@
-import cv2
 import json
 from os import listdir
 
+import cv2
+import torch
+from torch.nn import DataParallel
+
+from models.resnet import resnet_face18
+
 video_path = "/media/honza/My Passport/Faces/videos/"
 annotations_path = "/media/honza/My Passport/Faces/CEMI-annotations-Udalosti/"
+
+model_path = 'checkpoints/resnet18_110.pth'
 
 
 # returns an image with selected face
@@ -16,15 +23,18 @@ def getFace(video, frame, rect, border=0.0):
     # read the image from the video
     ret, im = video.read()
 
-    # obtain the crop from the image
-    if ret != False:
-        im_ret = im[rect[1]:rect[3], rect[0]:rect[2], :]
-
-    # return the cropped image
-    return im_ret
+    return im[rect[1]:rect[3], rect[0]:rect[2], :]
 
 
 if __name__ == "__main__":
+    # 0) Load model
+    model = resnet_face18(False)
+    model = DataParallel(model)
+
+    device = torch.device("cpu")
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.to(device)
+
     # 1) Get video names
     videos = listdir(video_path)
 
@@ -48,6 +58,7 @@ if __name__ == "__main__":
 
             im = getFace(video, frame, rect)
 
+            # 6) Get prediction
             print(im)
 
         break
