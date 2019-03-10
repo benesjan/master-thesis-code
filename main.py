@@ -6,12 +6,8 @@ import cv2
 import torch
 from torch.nn import DataParallel
 
+from config import Config
 from models.resnet import resnet_face18
-
-video_path = "/media/honza/My Passport/Faces/videos/"
-annotations_path = "/media/honza/My Passport/Faces/CEMI-annotations-Udalosti/"
-
-model_path = 'checkpoints/resnet18_110.pth'
 
 
 # make the selection square
@@ -31,7 +27,7 @@ def get_square(rect, im_res):
     elif right > im_res[1]:
         left = im_res[1] - selection_height
         right = selection_height
-    return (left, rect[1], right, rect[3])
+    return left, rect[1], right, rect[3]
 
 
 # returns an image with selected face
@@ -75,10 +71,11 @@ def get_next_image(video, annotations):
             im = process_face(im)
             yield name, im
 
+
 # Get features for 1 batch
-def predict(model, images, features):
+def predict(model, images, features, device):
     data = torch.from_numpy(images)
-    data = data.to(device)
+    data = data.to(opt.device)
     output = model(data)
     output = output.data.cpu().numpy()
 
@@ -92,8 +89,9 @@ def predict(model, images, features):
         features = np.vstack((features, feature))
     return features
 
+
 # get features for the whole video
-def get_features(model, video, annotations, batch_size=10):
+def get_features(model, video, annotations, batch_size, device):
     images = None
     features = None
     names = []
@@ -107,43 +105,44 @@ def get_features(model, video, annotations, batch_size=10):
             images = np.concatenate((images, image), axis=0)
 
         if images.shape[0] % batch_size == 0:
-            features = predict(model, images, features)
+            features = predict(model, images, features, device)
             images = None
 
     # Process any remaining images
     if images:
-        features = predict(model, images, features)
+        features = predict(model, images, features, device)
 
     return features, names
 
 
 if __name__ == "__main__":
+    opt = Config()
+
     # 0) Load model
     model = resnet_face18(False)
     model = DataParallel(model)
 
-    device = torch.device("cpu")
-    model.load_state_dict(torch.load(model_path, map_location=device))
-    model.to(device)
+    model.load_state_dict(torch.load(opt.model_path, map_location=opt.device))
+    model.to(opt.device)
 
     model.eval()
 
     # 1) Get video names
-    videos = listdir(video_path)
+    videos = listdir(opt.video_path)
 
     for video_name in videos:
         # 2) Load the annotations
-        with open(annotations_path + video_name + "_people.json", "r") as f:
+        with open(opt.annotations_path + video_name + "_people.json", "r") as f:
             annotations = json.load(f)
 
         # 3) load the video
-        video = cv2.VideoCapture(video_path + video_name)
+        video = cv2.VideoCapture(opt.video_path + video_name)
 
         # 4) check if the video file opened successfully, if not continue with another one
         if not video.isOpened():
             print(f'The videofile {video_name} could not be opened!')
             continue
 
-        features, names = get_features(model, video, annotations, batch_size=60)
+        features, names = get_features(model, video, annotations, batch_size=opt.batch_size, device=opt.device)
 
         break
