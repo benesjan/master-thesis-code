@@ -35,7 +35,7 @@ def get_square(rect, im_res):
 # video - the opened video object
 # frame - the frame number
 # rect - the rectangle of the face
-def getFace(video, frame, rect, border=0.0):
+def get_face(video, frame, rect):
     # set the frame position of the videofile to specific frame number
     video.set(cv2.CAP_PROP_POS_FRAMES, frame)
     video.set(cv2.COLOR_BGR2GRAY, frame)
@@ -68,7 +68,7 @@ def get_next_image(video, annotations):
             frame = detection['frame']
             rect = detection['rect']
 
-            im = getFace(video, frame, rect)
+            im = get_face(video, frame, rect)
             im = process_face(im)
             yield name, im
 
@@ -157,3 +157,5 @@ if __name__ == "__main__":
             # 7) save the features and names
             h5f.create_dataset(video_name, data=features)
             h5f.create_dataset(video_name + ".names", data=names, dtype=h5py.special_dtype(vlen=str))
+
+            print(f"Video {video_name} processed")
