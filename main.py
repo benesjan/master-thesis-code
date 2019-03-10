@@ -17,14 +17,14 @@ model_path = 'checkpoints/resnet18_110.pth'
 # make the selection square
 def get_square(rect, im_res):
     selection_height = rect[3] - rect[1]
-    # make sure selection height is even
+    # make sure the selection height is even
     if selection_height & 1:
         selection_height -= 1
         rect[3] -= 1
     width_middle = (rect[0] + rect[2]) / 2
     left = int(width_middle - (selection_height / 2))
     right = int(width_middle + (selection_height / 2))
-    # make sure the selection is within image boundaries
+    # make sure the selection is within the image boundaries
     if left < 0:
         left = 0
         right = selection_height
@@ -64,6 +64,59 @@ def process_face(im):
     return im
 
 
+def get_next_image(video, annotations):
+    for name in annotations.keys():
+        for detection in annotations[name]['detections']:
+            # 5) Get the cropped image
+            frame = detection['frame']
+            rect = detection['rect']
+
+            im = getFace(video, frame, rect)
+            im = process_face(im)
+            yield name, im
+
+# Get features for 1 batch
+def predict(model, images, features):
+    data = torch.from_numpy(images)
+    data = data.to(device)
+    output = model(data)
+    output = output.data.cpu().numpy()
+
+    fe_1 = output[::2]
+    fe_2 = output[1::2]
+    feature = np.hstack((fe_1, fe_2))
+
+    if features is None:
+        features = feature
+    else:
+        features = np.vstack((features, feature))
+    return features
+
+# get features for the whole video
+def get_features(model, video, annotations, batch_size=10):
+    images = None
+    features = None
+    names = []
+    for name, image in get_next_image(video, annotations):
+        # Save the name
+        names.append(name)
+
+        if images is None:
+            images = image
+        else:
+            images = np.concatenate((images, image), axis=0)
+
+        if images.shape[0] % batch_size == 0:
+            features = predict(model, images, features)
+            images = None
+
+    # Process any remaining images
+    if images:
+        features = predict(model, images, features)
+
+    return features, names
+
+
 if __name__ == "__main__":
     # 0) Load model
     model = resnet_face18(False)
@@ -73,13 +126,15 @@ if __name__ == "__main__":
     model.load_state_dict(torch.load(model_path, map_location=device))
     model.to(device)
 
+    model.eval()
+
     # 1) Get video names
     videos = listdir(video_path)
 
     for video_name in videos:
         # 2) Load the annotations
         with open(annotations_path + video_name + "_people.json", "r") as f:
-            data = json.load(f)
+            annotations = json.load(f)
 
         # 3) load the video
         video = cv2.VideoCapture(video_path + video_name)
@@ -89,15 +144,6 @@ if __name__ == "__main__":
             print(f'The videofile {video_name} could not be opened!')
             continue
 
-        for name in data.keys():
-            # 5) Get the cropped image
-            frame = data[name]['detections'][0]['frame']
-            rect = data[name]['detections'][0]['rect']
-
-            im = getFace(video, frame, rect)
-            im = process_face(im)
-
-            # 6) Get the prediction
-            break
+        features, names = get_features(model, video, annotations, batch_size=60)
 
         break
