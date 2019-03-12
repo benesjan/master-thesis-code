@@ -25,9 +25,9 @@ def get_square(rect, im_res):
     if left < 0:
         left = 0
         right = selection_height
-    elif right > im_res[1]:
-        left = im_res[1] - selection_height
-        right = selection_height
+    elif right > im_res[0]:
+        left = im_res[0] - selection_height
+        right = im_res[0]
     return left, rect[1], right, rect[3]
 
 
@@ -84,7 +84,9 @@ def move_selection(selection, resolution):
 
 def get_next_image(video, annotations):
     resolution = (int(video.get(cv2.CAP_PROP_FRAME_WIDTH)), int(video.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-    for name in annotations.keys():
+    num_of_names = len(annotations.keys())
+    for i, name in enumerate(annotations.keys()):
+        print(f"\t{i + 1}/{num_of_names} {name}")
         for detection in annotations[name]['detections']:
             # Get the cropped image
             frame = detection['frame']
@@ -98,8 +100,14 @@ def get_next_image(video, annotations):
                     # Ignore the frame
                     continue
 
-            im = get_face(video, frame, rect)
-            im = process_face(im)
+            try:
+                im = get_face(video, frame, rect)
+                im = process_face(im)
+            except Exception as e:
+                print("An error occurred while processing the image:")
+                print(f"Name: {name}\nFrame: {frame}\nRect: {rect}")
+                continue
+
             yield name, im
 
 
@@ -140,7 +148,7 @@ def get_features(model, video, annotations):
             images = None
 
     # Process any remaining images
-    if images:
+    if images is not None:
         features = predict(model, images, features)
 
     return features, np.array(names, dtype=object)
