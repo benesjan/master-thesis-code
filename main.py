@@ -65,12 +65,38 @@ def process_face(im):
     return im
 
 
+def move_selection(selection, resolution):
+    # selection = [x1, y1, x2, y2], resolution= (width, height)
+    if selection[0] < 0:
+        selection[2] -= selection[0]
+        selection[0] = 0
+    elif selection[2] > resolution[0]:
+        selection[0] -= (selection[2] - resolution[0])
+        selection[2] = resolution[0]
+    if selection[1] < 0:
+        selection[3] -= selection[1]
+        selection[1] = 0
+    elif selection[3] > resolution[1]:
+        selection[1] -= (selection[3] - resolution[1])
+        selection[3] = resolution[1]
+    return selection
+
+
 def get_next_image(video, annotations):
+    resolution = (int(video.get(cv2.CAP_PROP_FRAME_WIDTH)), int(video.get(cv2.CAP_PROP_FRAME_HEIGHT)))
     for name in annotations.keys():
         for detection in annotations[name]['detections']:
-            # 5) Get the cropped image
+            # Get the cropped image
             frame = detection['frame']
             rect = detection['rect']
+
+            # Check if the selection crosses the image border
+            if rect[0] < 0 or rect[2] > resolution[0] or rect[1] < 0 or rect[3] > resolution[1]:
+                if conf.MOVE_SELECTION:
+                    rect = move_selection(rect, resolution)
+                else:
+                    # Ignore the frame
+                    continue
 
             im = get_face(video, frame, rect)
             im = process_face(im)
@@ -78,7 +104,7 @@ def get_next_image(video, annotations):
 
 
 # Get features for 1 batch
-def predict(model, images, features, device):
+def predict(model, images, features):
     data = torch.from_numpy(images)
     data = data.to(conf.DEVICE)
     output = model(data)
@@ -96,7 +122,7 @@ def predict(model, images, features, device):
 
 
 # get features for the whole video
-def get_features(model, video, annotations, batch_size, device):
+def get_features(model, video, annotations):
     images = None
     features = None
     names = []
@@ -109,13 +135,13 @@ def get_features(model, video, annotations, batch_size, device):
         else:
             images = np.concatenate((images, image), axis=0)
 
-        if images.shape[0] % batch_size == 0:
-            features = predict(model, images, features, device)
+        if images.shape[0] % conf.BATCH_SIZE == 0:
+            features = predict(model, images, features)
             images = None
 
     # Process any remaining images
     if images:
-        features = predict(model, images, features, device)
+        features = predict(model, images, features)
 
     return features, np.array(names, dtype=object)
 
@@ -158,7 +184,7 @@ if __name__ == "__main__":
                 continue
 
             # 6) get the features
-            features, names = get_features(model, video, annotations, batch_size=conf.BATCH_SIZE, device=conf.DEVICE)
+            features, names = get_features(model, video, annotations)
 
             # 7) save the features and names
             h5f.create_dataset(video_name, data=features)

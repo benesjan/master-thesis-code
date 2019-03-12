@@ -11,3 +11,7 @@ class Config:
 
     MODEL_PATH = 'checkpoints/resnet18_110.pth'
     DB_PATH = 'out/features.h5'
+
+    # Constant which specifies whether to move the image selection if it crosses the image border
+    # If false the frame will be ignored
+    MOVE_SELECTION = True
