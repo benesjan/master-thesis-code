@@ -80,7 +80,7 @@ def get_next_image(video, annotations):
 # Get features for 1 batch
 def predict(model, images, features, device):
     data = torch.from_numpy(images)
-    data = data.to(opt.device)
+    data = data.to(conf.DEVICE)
     output = model(data)
     output = output.data.cpu().numpy()
 
@@ -121,34 +121,36 @@ def get_features(model, video, annotations, batch_size, device):
 
 
 if __name__ == "__main__":
-    opt = Config()
+    conf = Config()
 
     # 1) Load model
     model = resnet_face18(False)
     model = DataParallel(model)
 
-    model.load_state_dict(torch.load(opt.model_path, map_location=opt.device))
-    model.to(opt.device)
+    model.load_state_dict(torch.load(conf.MODEL_PATH, map_location=conf.DEVICE))
+    model.to(conf.DEVICE)
 
     model.eval()
 
     # 2) Get video names
-    videos = listdir(opt.video_path)
+    videos = listdir(conf.VIDEO_PATH)
 
     # 3) Open the h5 file
-    with h5py.File(opt.db_path, 'a') as h5f:
+    with h5py.File(conf.DB_PATH, 'a') as h5f:
 
         for video_name in videos:
             if video_name in h5f:
                 print(f'OMITTING {video_name}: features are already present in the database')
                 continue
 
+            print(f"Processing {video_name}")
+
             # 3) Load the annotations
-            with open(opt.annotations_path + video_name + "_people.json", "r") as f:
+            with open(conf.ANNOTATIONS_PATH + video_name + "_people.json", "r") as f:
                 annotations = json.load(f)
 
             # 4) load the video
-            video = cv2.VideoCapture(opt.video_path + video_name)
+            video = cv2.VideoCapture(conf.VIDEO_PATH + video_name)
 
             # 5) check if the video file opened successfully, if not continue with another one
             if not video.isOpened():
@@ -156,7 +158,7 @@ if __name__ == "__main__":
                 continue
 
             # 6) get the features
-            features, names = get_features(model, video, annotations, batch_size=opt.batch_size, device=opt.device)
+            features, names = get_features(model, video, annotations, batch_size=conf.BATCH_SIZE, device=conf.DEVICE)
 
             # 7) save the features and names
             h5f.create_dataset(video_name, data=features)

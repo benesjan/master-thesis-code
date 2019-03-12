@@ -2,12 +2,12 @@ import torch
 
 
 class Config:
-    batch_size = 60
+    BATCH_SIZE = 60
 
-    device = torch.device("cpu")
+    DEVICE = torch.device("cpu")
 
-    video_path = "/media/honza/My Passport/Faces/videos/"
-    annotations_path = "/media/honza/My Passport/Faces/CEMI-annotations-Udalosti/"
+    VIDEO_PATH = "data/videos/"
+    ANNOTATIONS_PATH = "data/CEMI-annotations-Udalosti/"
 
-    model_path = 'checkpoints/resnet18_110.pth'
-    db_path = 'out/features.h5'
+    MODEL_PATH = 'checkpoints/resnet18_110.pth'
+    DB_PATH = 'out/features.h5'
