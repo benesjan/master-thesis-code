@@ -101,13 +101,8 @@ def get_next_image(video, annotations):
                     # Ignore the frame
                     continue
 
-            try:
-                im = get_face(video, frame, rect)
-                im = process_face(im)
-            except Exception as e:
-                print("An error occurred while processing the image:")
-                print(f"Name: {name}\nFrame: {frame}\nRect: {rect}")
-                continue
+            im = get_face(video, frame, rect)
+            im = process_face(im)
 
             yield name, im
 
@@ -172,32 +167,36 @@ if __name__ == "__main__":
 
     # 3) Open the h5 file
     with h5py.File(conf.DB_PATH, 'a') as h5f:
+        try:
+            for video_name in videos:
+                start_time = time()
+                if video_name in h5f:
+                    print(f'OMITTING {video_name}: features are already present in the database')
+                    continue
 
-        for video_name in videos:
-            start_time = time()
-            if video_name in h5f:
-                print(f'OMITTING {video_name}: features are already present in the database')
-                continue
+                print(f"Processing {video_name}")
 
-            print(f"Processing {video_name}")
+                # 3) Load the annotations
+                with open(conf.ANNOTATIONS_PATH + video_name + "_people.json", "r") as f:
+                    annotations = json.load(f)
 
-            # 3) Load the annotations
-            with open(conf.ANNOTATIONS_PATH + video_name + "_people.json", "r") as f:
-                annotations = json.load(f)
+                # 4) load the video
+                video = cv2.VideoCapture(conf.VIDEO_PATH + video_name)
 
-            # 4) load the video
-            video = cv2.VideoCapture(conf.VIDEO_PATH + video_name)
+                # 5) check if the video file opened successfully, if not continue with another one
+                if not video.isOpened():
+                    print(f'The videofile {video_name} could not be opened!')
+                    continue
 
-            # 5) check if the video file opened successfully, if not continue with another one
-            if not video.isOpened():
-                print(f'The videofile {video_name} could not be opened!')
-                continue
+                # 6) get the features
+                features, names = get_features(model, video, annotations)
 
-            # 6) get the features
-            features, names = get_features(model, video, annotations)
+                # 7) save the features and names
+                h5f.create_dataset(video_name, data=features)
+                h5f.create_dataset(video_name + ".names", data=names, dtype=h5py.special_dtype(vlen=str))
+                h5f.flush()
 
-            # 7) save the features and names
-            h5f.create_dataset(video_name, data=features)
-            h5f.create_dataset(video_name + ".names", data=names, dtype=h5py.special_dtype(vlen=str))
-
-            print(f"Processing of {video_name} finished in {(time() - start_time) / 60} minutes")
+                print(f"Processing of {video_name} finished in {(time() - start_time) / 60} minutes")
+        except KeyboardInterrupt as e:
+            print("KeyboardInterrupt has been caught. Exiting...")
+            h5f.flush()
