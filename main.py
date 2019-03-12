@@ -1,5 +1,6 @@
 import json
 from os import listdir
+from time import time
 
 import cv2
 import h5py
@@ -173,6 +174,7 @@ if __name__ == "__main__":
     with h5py.File(conf.DB_PATH, 'a') as h5f:
 
         for video_name in videos:
+            start_time = time()
             if video_name in h5f:
                 print(f'OMITTING {video_name}: features are already present in the database')
                 continue
@@ -198,4 +200,4 @@ if __name__ == "__main__":
             h5f.create_dataset(video_name, data=features)
             h5f.create_dataset(video_name + ".names", data=names, dtype=h5py.special_dtype(vlen=str))
 
-            print(f"Video {video_name} processed")
+            print(f"Processing of {video_name} finished in {(time() - start_time) / 60} minutes")
