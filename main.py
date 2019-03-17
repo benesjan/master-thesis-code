@@ -88,23 +88,26 @@ def get_next_image(video, annotations):
     num_of_names = len(annotations.keys())
     for i, name in enumerate(annotations.keys()):
         print(f"\t{i + 1}/{num_of_names} {name}")
-        for detection in annotations[name]['detections']:
-            # Get the cropped image
-            frame = detection['frame']
-            rect = detection['rect']
+        try:
+            for detection in annotations[name]['detections']:
+                # Get the cropped image
+                frame = detection['frame']
+                rect = detection['rect']
 
-            # Check if the selection crosses the image border
-            if rect[0] < 0 or rect[2] > resolution[0] or rect[1] < 0 or rect[3] > resolution[1]:
-                if conf.MOVE_SELECTION:
-                    rect = move_selection(rect, resolution)
-                else:
-                    # Ignore the frame
-                    continue
+                # Check if the selection crosses the image border
+                if rect[0] < 0 or rect[2] > resolution[0] or rect[1] < 0 or rect[3] > resolution[1]:
+                    if conf.MOVE_SELECTION:
+                        rect = move_selection(rect, resolution)
+                    else:
+                        # Ignore the frame
+                        continue
 
-            im = get_face(video, frame, rect)
-            im = process_face(im)
+                im = get_face(video, frame, rect)
+                im = process_face(im)
 
-            yield name, im
+                yield name, im
+        except Exception as e:
+            print(f"An error occurred when processing image of {name}\n{e}")
 
 
 # Get features for 1 batch
