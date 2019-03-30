@@ -11,7 +11,7 @@ if __name__ == "__main__":
     conf = Config()
 
     # 1) Open the h5 file
-    with h5py.File(conf.DB_PATH, 'r') as h5f:
+    with h5py.File(conf.DB_PATH_RAW, 'r') as h5f:
         data = h5f['udalosti_-_11.11.2016_19-00_0.mp4'][0:1000]
         names = h5f['udalosti_-_11.11.2016_19-00_0.mp4.names'][0:1000]
         similarities = cosine_similarity(data)
@@ -29,3 +29,11 @@ if __name__ == "__main__":
                 coords = (indices[0][j], indices[1][j])
                 reference_affinity = (names[coords[0]] == names[coords[1]])
                 inferred_affinity = (similarities[coords] <= threshold)
+
+                if inferred_affinity and not reference_affinity:
+                    fac += 1
+                elif reference_affinity and not inferred_affinity:
+                    frc += 1
+
+            values[i, 1] = fac / dst_count
+            values[i, 2] = frc / dst_count

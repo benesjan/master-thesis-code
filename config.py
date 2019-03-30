@@ -10,7 +10,8 @@ class Config:
     ANNOTATIONS_PATH = "data/CEMI-annotations-Udalosti/"
 
     MODEL_PATH = 'checkpoints/resnet18_110.pth'
-    DB_PATH = 'out/features.h5'
+    DB_PATH = 'out/features_merged.h5'
+    DB_PATH_RAW = 'out/features.h5'
 
     # Constant which specifies whether to move the image selection if it crosses the image border
     # If false the frame will be ignored

@@ -169,7 +169,7 @@ if __name__ == "__main__":
     videos = listdir(conf.VIDEO_PATH)
 
     # 3) Open the h5 file
-    with h5py.File(conf.DB_PATH, 'a') as h5f:
+    with h5py.File(conf.DB_PATH_RAW, 'a') as h5f:
         try:
             for video_name in videos:
                 start_time = time()
