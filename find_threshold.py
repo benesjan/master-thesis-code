@@ -9,7 +9,7 @@ import multiprocessing as mp
 
 from sklearn.metrics.pairwise import cosine_distances
 
-from config import Config
+from config import *
 
 
 def generate_intervals(max_val, interval_len):
@@ -56,12 +56,13 @@ def process_distances(interval_pair):
 
 
 if __name__ == "__main__":
-    conf = Config()
+    conf = ConfigMeta()
 
     start_time = time()
 
     # 1) Open the h5 file
-    with h5py.File(conf.DB_PATH, 'r') as h5f, h5py.File(conf.THRESHOLD_VALS, 'w') as h5t:
+    with h5py.File(conf.DB_PATH, 'r') as h5f, \
+            h5py.File(conf.THRESHOLD_VALS, 'w') as h5t, open(conf.PROGRESS_FILE, 'w', 1) as pf:
         FEATURES = h5f['features']
         NAMES = h5f['names']
 
@@ -75,7 +76,16 @@ if __name__ == "__main__":
         result = np.zeros((len(THRESHOLDS), 4), dtype=np.uint32)
         for processed_count, res_x in enumerate(pool.imap(process_distances, get_next_pair(INTERVALS)), 1):
             result += res_x
-            print(f"{processed_count / NUM_PAIRS * 100}% processed in {(time() - start_time) / 60} minutes")
+
+            # Printout
+            processing_time = (time() - start_time) / 60
+            percents_processed = processed_count / NUM_PAIRS * 100
+            estimated_remaining = (processing_time / percents_processed * 100) - processing_time
+            printout = f"{percents_processed}% processed in {processing_time} minutes. " \
+                f"Estimated remaining time: {estimated_remaining} minutes.\n"
+            pf.seek(0)
+            pf.write(printout)
+            pf.flush()
 
         h5t.create_dataset("vals", data=result)
         h5t.create_dataset("thresholds", data=THRESHOLDS)
