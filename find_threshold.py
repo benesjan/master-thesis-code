@@ -4,6 +4,9 @@
 
 import h5py
 import numpy as np
+import multiprocessing as mp
+
+from sklearn.metrics.pairwise import cosine_distances
 
 from config import Config
 
@@ -17,7 +20,13 @@ def generate_intervals(max_val, interval_len):
 def get_next_pair(intervals):
     for i in range(len(intervals)):
         for j in range(i, len(intervals)):
-            yield [intervals[i], intervals[j]]
+            yield (intervals[i], intervals[j])
+
+
+def process_distances(interval_pair):
+    dists = cosine_distances(FEATURES[interval_pair[0][0]:interval_pair[0][1]],
+                             FEATURES[interval_pair[1][0]:interval_pair[1][1]])
+    return interval_pair
 
 
 if __name__ == "__main__":
@@ -29,7 +38,8 @@ if __name__ == "__main__":
         NAMES = h5f['names']
 
         THRESHOLDS = np.arange(0, 1, 0.005)
+        INTERVALS = generate_intervals(FEATURES.shape[0], 100000)
 
-        intervals = generate_intervals(FEATURES.shape[0], 100000)
-        for pair in get_next_pair(intervals):
-            print(pair)
+        pool = mp.Pool(mp.cpu_count())
+        result = pool.map(process_distances, get_next_pair(INTERVALS))
+        print(result)
