@@ -27,7 +27,7 @@ def get_next_pair(intervals):
 def process_distances(interval_pair):
     dists = cosine_distances(FEATURES[interval_pair[0][0]:interval_pair[0][1]],
                              FEATURES[interval_pair[1][0]:interval_pair[1][1]])
-    vals = np.zeros((len(THRESHOLDS), 4), dtype=np.float32)
+    vals = np.zeros((len(THRESHOLDS), 4), dtype=np.uint32)
 
     names1 = NAMES[interval_pair[0][0]:interval_pair[0][1]]
     names2 = NAMES[interval_pair[1][0]:interval_pair[1][1]]
@@ -66,12 +66,16 @@ if __name__ == "__main__":
         NAMES = h5f['names']
 
         THRESHOLDS = np.arange(0, 1, 0.005)
-        INTERVALS = generate_intervals(FEATURES.shape[0], 100)
+        INTERVALS = generate_intervals(FEATURES.shape[0], 1000)
+
+        NUM_PAIRS = len(INTERVALS) * (len(INTERVALS) + 1) / 2
 
         pool = mp.Pool(mp.cpu_count())
-        result = sum(pool.map(process_distances, get_next_pair(INTERVALS)))
+
+        result = np.zeros((len(THRESHOLDS), 4), dtype=np.uint32)
+        for processed_count, res_x in enumerate(pool.imap(process_distances, get_next_pair(INTERVALS)), 1):
+            result += res_x
+            print(f"{processed_count / NUM_PAIRS * 100}% processed in {(time() - start_time) / 60} minutes")
 
         h5t.create_dataset("vals", data=result)
         h5t.create_dataset("thresholds", data=THRESHOLDS)
-
-    print(f"Processing finished in {(time() - start_time) / 60} minutes")
