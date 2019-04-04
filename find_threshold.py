@@ -1,6 +1,7 @@
 # 1) Compute distance matrix
 # 2) Iterate through distances which represent potential threshold
 # 3) Evaluate false acceptance rate and false rejection rate and plot them
+from time import time
 
 import h5py
 import numpy as np
@@ -26,11 +27,38 @@ def get_next_pair(intervals):
 def process_distances(interval_pair):
     dists = cosine_distances(FEATURES[interval_pair[0][0]:interval_pair[0][1]],
                              FEATURES[interval_pair[1][0]:interval_pair[1][1]])
-    return interval_pair
+    vals = np.zeros((len(THRESHOLDS), 4), dtype=np.float32)
+
+    names1 = NAMES[interval_pair[0][0]:interval_pair[0][1]]
+    names2 = NAMES[interval_pair[1][0]:interval_pair[1][1]]
+
+    for i, threshold in enumerate(THRESHOLDS):
+        # Iterate through upper triangular matrix
+        for j in range(0, dists.shape[0]):
+            for k in range(j + 1, dists.shape[1]):
+                inferred_affinity = (dists[j, k] <= threshold)
+                reference_affinity = (names1[j] == names2[k])
+
+                if inferred_affinity and reference_affinity:
+                    # True positive
+                    vals[i, 0] += 1
+                elif not inferred_affinity and not reference_affinity:
+                    # True negative
+                    vals[i, 1] += 1
+                elif inferred_affinity and not reference_affinity:
+                    # False positive +=1
+                    vals[i, 2] += 1
+                else:
+                    # False negative
+                    vals[i, 3] += 1
+
+    return vals
 
 
 if __name__ == "__main__":
     conf = Config()
+
+    start_time = time()
 
     # 1) Open the h5 file
     with h5py.File(conf.DB_PATH, 'r') as h5f, h5py.File(conf.THRESHOLD_VALS, 'w') as h5t:
@@ -38,8 +66,12 @@ if __name__ == "__main__":
         NAMES = h5f['names']
 
         THRESHOLDS = np.arange(0, 1, 0.005)
-        INTERVALS = generate_intervals(FEATURES.shape[0], 100000)
+        INTERVALS = generate_intervals(FEATURES.shape[0], 100)
 
         pool = mp.Pool(mp.cpu_count())
-        result = pool.map(process_distances, get_next_pair(INTERVALS))
-        print(result)
+        result = sum(pool.map(process_distances, get_next_pair(INTERVALS)))
+
+        h5t.create_dataset("vals", data=result)
+        h5t.create_dataset("thresholds", data=THRESHOLDS)
+
+    print(f"Processing finished in {(time() - start_time) / 60} minutes")
