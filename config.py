@@ -1,3 +1,5 @@
+from multiprocessing import cpu_count
+
 import torch
 
 
@@ -20,6 +22,8 @@ class Config:
 
     PROGRESS_FILE = 'out/progress.txt'
 
+    CPU_COUNT = cpu_count()
+
 
 class ConfigMeta:
     BATCH_SIZE = 60
@@ -39,3 +43,5 @@ class ConfigMeta:
     MOVE_SELECTION = True
 
     PROGRESS_FILE = f'{HOME_DIR}/progress.txt'
+
+    CPU_COUNT = 8

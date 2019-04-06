@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
         NUM_PAIRS = len(INTERVALS) * (len(INTERVALS) + 1) / 2
 
-        pool = mp.Pool(mp.cpu_count())
+        pool = mp.Pool(conf.CPU_COUNT)
 
         result = np.zeros((len(THRESHOLDS), 4), dtype=np.uint32)
         for processed_count, res_x in enumerate(pool.imap(process_distances, get_next_pair(INTERVALS)), 1):
