@@ -2,46 +2,50 @@ from multiprocessing import cpu_count
 
 import torch
 
+from settings import META_ENV
+
 
 class Config:
-    BATCH_SIZE = 60
 
-    DEVICE = torch.device('cpu')
+    def __init__(self):
+        self.BATCH_SIZE = 60
+        self.DEVICE = torch.device('cpu')
 
-    VIDEO_PATH = 'data/videos/'
-    ANNOTATIONS_PATH = 'data/CEMI-annotations-Udalosti/'
+        # Constant which specifies whether to move the image selection if it crosses the image border
+        # If false the frame will be ignored
+        self.MOVE_SELECTION = True
 
-    MODEL_PATH = 'checkpoints/resnet18_110.pth'
-    DB_PATH = 'out/features_merged.h5'
-    DB_PATH_RAW = 'out/features.h5'
-    THRESHOLD_VALS = 'out/threshold_vals.h5'
+        if META_ENV:
+            self._set_meta()
+        else:
+            self._set_home()
 
-    # Constant which specifies whether to move the image selection if it crosses the image border
-    # If false the frame will be ignored
-    MOVE_SELECTION = True
+    def _set_meta(self):
 
-    PROGRESS_FILE = 'out/progress.txt'
+        home_dir = '/storage/plzen1/home/benesjan'
 
-    CPU_COUNT = cpu_count()
+        self.VIDEO_PATH = f'{home_dir}/Faces/videos/'
+        self.ANNOTATIONS_PATH = f'{home_dir}/Faces/CEMI-annotations-Udalosti/'
 
+        self.MODEL_PATH = f'{home_dir}/spc/checkpoints/resnet18_110.pth'
+        self.DB_PATH = f'{home_dir}/features_merged.h5'
+        self.DB_PATH_RAW = f'{home_dir}/features.h5'
+        self.THRESHOLD_VALS = f'{home_dir}/threshold_vals.h5'
 
-class ConfigMeta:
-    BATCH_SIZE = 60
+        self.PROGRESS_FILE = f'{home_dir}/progress.txt'
 
-    DEVICE = torch.device('cpu')
+        self.CPU_COUNT = 8
 
-    HOME_DIR = '/storage/plzen1/home/benesjan'
+    def _set_home(self):
 
-    VIDEO_PATH = f'{HOME_DIR}/Faces/videos/'
-    ANNOTATIONS_PATH = f'{HOME_DIR}/Faces/CEMI-annotations-Udalosti/'
+        self.VIDEO_PATH = 'data/videos/'
+        self.ANNOTATIONS_PATH = 'data/CEMI-annotations-Udalosti/'
 
-    MODEL_PATH = f'{HOME_DIR}/spc/checkpoints/resnet18_110.pth'
-    DB_PATH = f'{HOME_DIR}/features_merged.h5'
-    DB_PATH_RAW = f'{HOME_DIR}/features.h5'
-    THRESHOLD_VALS = f'{HOME_DIR}/threshold_vals.h5'
+        self.MODEL_PATH = 'checkpoints/resnet18_110.pth'
+        self.DB_PATH = 'out/features_merged.h5'
+        self.DB_PATH_RAW = 'out/features.h5'
+        self.THRESHOLD_VALS = 'out/threshold_vals.h5'
 
-    MOVE_SELECTION = True
+        self.PROGRESS_FILE = 'out/progress.txt'
 
-    PROGRESS_FILE = f'{HOME_DIR}/progress.txt'
-
-    CPU_COUNT = 8
+        self.CPU_COUNT = cpu_count()

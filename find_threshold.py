@@ -9,7 +9,7 @@ import multiprocessing as mp
 
 from sklearn.metrics.pairwise import cosine_distances
 
-from config import *
+from config import Config
 
 
 def generate_intervals(max_val, interval_len):
@@ -56,7 +56,7 @@ def process_distances(interval_pair):
 
 
 if __name__ == "__main__":
-    conf = ConfigMeta()
+    conf = Config()
 
     start_time = time()
 
