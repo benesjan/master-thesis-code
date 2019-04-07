@@ -7,6 +7,7 @@ import h5py
 import numpy as np
 import multiprocessing as mp
 
+from scipy.spatial import distance_matrix
 from sklearn.metrics.pairwise import cosine_distances
 
 from config import Config
@@ -24,6 +25,10 @@ def get_next_pair(intervals):
             yield (intervals[i], intervals[j])
 
 
+def create_affinity_matrix(labelsa, labelsb):
+    return distance_matrix(labelsa.reshape(-1, 1), labelsb.reshape(-1, 1)) == 0
+
+
 def process_distances(interval_pair):
     dists = cosine_distances(FEATURES[interval_pair[0][0]:interval_pair[0][1]],
                              FEATURES[interval_pair[1][0]:interval_pair[1][1]])
@@ -32,25 +37,29 @@ def process_distances(interval_pair):
     labels1 = LABELS[interval_pair[0][0]:interval_pair[0][1]]
     labels2 = LABELS[interval_pair[1][0]:interval_pair[1][1]]
 
-    for i, threshold in enumerate(THRESHOLDS):
-        # Iterate through upper triangular matrix
-        for j in range(0, dists.shape[0]):
-            for k in range(j + 1, dists.shape[1]):
-                inferred_affinity = (dists[j, k] <= threshold)
-                reference_affinity = (labels1[j] == labels2[k])
+    indices = np.triu_indices_from(dists)
 
-                if inferred_affinity and reference_affinity:
-                    # True positive
-                    vals[i, 0] += 1
-                elif not inferred_affinity and not reference_affinity:
-                    # True negative
-                    vals[i, 1] += 1
-                elif inferred_affinity and not reference_affinity:
-                    # False positive +=1
-                    vals[i, 2] += 1
-                else:
-                    # False negative
-                    vals[i, 3] += 1
+    dists = dists[indices]
+
+    ref_labels = distance_matrix(labels1.reshape(-1, 1), labels2.reshape(-1, 1)) == 0
+    ref_labels = ref_labels[indices]
+
+    assert ref_labels.shape == dists.shape, "AssertionError: Dimension mismatch in process_distances"
+
+    for i, threshold in enumerate(THRESHOLDS):
+        pred_labels = dists <= threshold
+
+        # True Positive (TP): we predict a label of 1 (positive), and the true label is 1.
+        vals[i, 0] += np.sum(np.logical_and(pred_labels, ref_labels))
+
+        # True Negative (TN): we predict a label of 0 (negative), and the true label is 0.
+        vals[i, 1] += np.sum(np.logical_and(pred_labels == False, ref_labels == False))
+
+        # False Positive (FP): we predict a label of 1 (positive), but the true label is 0.
+        vals[i, 2] += np.sum(np.logical_and(pred_labels, ref_labels == False))
+
+        # False Negative (FN): we predict a label of 0 (negative), but the true label is 1.
+        vals[i, 3] += np.sum(np.logical_and(pred_labels == False, ref_labels))
 
     return vals
 
@@ -67,7 +76,7 @@ if __name__ == "__main__":
         LABELS = h5f['labels']
 
         THRESHOLDS = np.arange(0, 1, 0.005)
-        INTERVALS = generate_intervals(FEATURES.shape[0], 1000)
+        INTERVALS = generate_intervals(FEATURES.shape[0], 4000)
 
         NUM_PAIRS = len(INTERVALS) * (len(INTERVALS) + 1) / 2
 
