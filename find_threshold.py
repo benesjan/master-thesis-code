@@ -25,10 +25,6 @@ def get_next_pair(intervals):
             yield (intervals[i], intervals[j])
 
 
-def create_affinity_matrix(labelsa, labelsb):
-    return distance_matrix(labelsa.reshape(-1, 1), labelsb.reshape(-1, 1)) == 0
-
-
 def process_distances(interval_pair):
     dists = cosine_distances(FEATURES[interval_pair[0][0]:interval_pair[0][1]],
                              FEATURES[interval_pair[1][0]:interval_pair[1][1]])
@@ -87,11 +83,12 @@ if __name__ == "__main__":
             result += res_x
 
             # Printout
-            processing_time = (time() - start_time) / 60
+            processing_time = (time() - start_time) / 3600
             percents_processed = processed_count / NUM_PAIRS * 100
             estimated_remaining = (processing_time / percents_processed * 100) - processing_time
             printout = f"{percents_processed}% processed in {processing_time} minutes. " \
-                f"Estimated remaining time: {estimated_remaining} minutes.\n"
+                f"Estimated remaining time: {estimated_remaining} hours.\n"
+            print(printout)
             pf.seek(0)
             pf.write(printout)
             pf.flush()
