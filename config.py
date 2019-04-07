@@ -22,7 +22,7 @@ class Config:
 
     def _set_meta(self):
 
-        home_dir = '/storage/plzen1/home/benesjan'
+        home_dir = '/storage/plzen1/home/benesjan/spcdata'
 
         self.VIDEO_PATH = f'{home_dir}/Faces/videos/'
         self.ANNOTATIONS_PATH = f'{home_dir}/Faces/CEMI-annotations-Udalosti/'
@@ -30,6 +30,8 @@ class Config:
         self.MODEL_PATH = f'{home_dir}/spc/checkpoints/resnet18_110.pth'
         self.DB_PATH = f'{home_dir}/features_merged.h5'
         self.DB_PATH_RAW = f'{home_dir}/features.h5'
+        self.LABEL_MAP = f'{home_dir}/label_map.pickle'
+
         self.THRESHOLD_VALS = f'{home_dir}/threshold_vals.h5'
 
         self.PROGRESS_FILE = f'{home_dir}/progress.txt'
@@ -44,6 +46,8 @@ class Config:
         self.MODEL_PATH = 'checkpoints/resnet18_110.pth'
         self.DB_PATH = 'out/features_merged.h5'
         self.DB_PATH_RAW = 'out/features.h5'
+        self.LABEL_MAP = 'out/label_map.pickle'
+
         self.THRESHOLD_VALS = 'out/threshold_vals.h5'
 
         self.PROGRESS_FILE = 'out/progress.txt'
