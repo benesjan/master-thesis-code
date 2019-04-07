@@ -29,15 +29,15 @@ def process_distances(interval_pair):
                              FEATURES[interval_pair[1][0]:interval_pair[1][1]])
     vals = np.zeros((len(THRESHOLDS), 4), dtype=np.uint32)
 
-    names1 = NAMES[interval_pair[0][0]:interval_pair[0][1]]
-    names2 = NAMES[interval_pair[1][0]:interval_pair[1][1]]
+    labels1 = LABELS[interval_pair[0][0]:interval_pair[0][1]]
+    labels2 = LABELS[interval_pair[1][0]:interval_pair[1][1]]
 
     for i, threshold in enumerate(THRESHOLDS):
         # Iterate through upper triangular matrix
         for j in range(0, dists.shape[0]):
             for k in range(j + 1, dists.shape[1]):
                 inferred_affinity = (dists[j, k] <= threshold)
-                reference_affinity = (names1[j] == names2[k])
+                reference_affinity = (labels1[j] == labels2[k])
 
                 if inferred_affinity and reference_affinity:
                     # True positive
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     with h5py.File(conf.DB_PATH, 'r') as h5f, \
             h5py.File(conf.THRESHOLD_VALS, 'w') as h5t, open(conf.PROGRESS_FILE, 'w', 1) as pf:
         FEATURES = h5f['features']
-        NAMES = h5f['names']
+        LABELS = h5f['labels']
 
         THRESHOLDS = np.arange(0, 1, 0.005)
         INTERVALS = generate_intervals(FEATURES.shape[0], 1000)

@@ -27,7 +27,7 @@ class Config:
         self.VIDEO_PATH = f'{home_dir}/Faces/videos/'
         self.ANNOTATIONS_PATH = f'{home_dir}/Faces/CEMI-annotations-Udalosti/'
 
-        self.MODEL_PATH = f'{home_dir}/spc/checkpoints/resnet18_110.pth'
+        self.MODEL_PATH = f'{home_dir}/checkpoints/resnet18_110.pth'
         self.DB_PATH = f'{home_dir}/features_merged.h5'
         self.DB_PATH_RAW = f'{home_dir}/features.h5'
         self.LABEL_MAP = f'{home_dir}/label_map.pickle'
