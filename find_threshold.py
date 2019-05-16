@@ -71,7 +71,7 @@ if __name__ == "__main__":
         FEATURES = h5f['features']
         LABELS = h5f['labels']
 
-        THRESHOLDS = np.arange(0, 1, 0.005)
+        THRESHOLDS = np.arange(0, 2, 0.005)
         INTERVALS = generate_intervals(FEATURES.shape[0], 4000)
 
         NUM_PAIRS = len(INTERVALS) * (len(INTERVALS) + 1) / 2
@@ -86,7 +86,7 @@ if __name__ == "__main__":
             processing_time = (time() - start_time) / 3600
             percents_processed = processed_count / NUM_PAIRS * 100
             estimated_remaining = (processing_time / percents_processed * 100) - processing_time
-            printout = f"{percents_processed}% processed in {processing_time} minutes. " \
+            printout = f"{percents_processed}% processed in {processing_time} hours. " \
                 f"Estimated remaining time: {estimated_remaining} hours.\n"
             print(printout)
             pf.seek(0)

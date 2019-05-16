@@ -8,6 +8,11 @@ if __name__ == "__main__":
 
     # 1) Open the h5 file
     with h5py.File(conf.THRESHOLD_VALS, 'r') as h5t:
+        # TP, TN, FP, FN
+        thresholds = h5t['thresholds']
         vals = h5t['vals']
-        pyplot.plot(h5t['vals'][:, 0], h5t['vals'][:, 1:3])
+        pyplot.plot(thresholds, vals)
+        pyplot.legend(['TP', 'TN', 'FP', 'FN'])
+        pyplot.xlabel('Threshold')
+        pyplot.xlim([thresholds[0], thresholds[-1]])
         pyplot.show()
