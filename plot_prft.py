@@ -1,8 +1,11 @@
+from os.path import join
+
 import h5py
 from matplotlib import pyplot
 import numpy as np
 
 from config import Config
+from utils import create_dir
 
 
 def compute_prfo(thresholds, vals):
@@ -24,6 +27,10 @@ def compute_prfo(thresholds, vals):
 if __name__ == "__main__":
     conf = Config()
 
+    target_dir = 'referat/out'
+
+    create_dir(target_dir)
+
     # 1) Open the h5 file
     with h5py.File(conf.THRESHOLD_VALS, 'r') as h5t:
         # TP, TN, FP, FN
@@ -31,17 +38,18 @@ if __name__ == "__main__":
         vals = h5t['vals']
 
         # Plot TP, TN, FP, FN
-        pyplot.figure(0)
+        fig = pyplot.figure(0)
         pyplot.plot(thresholds, vals)
         pyplot.legend(['TP', 'TN', 'FP', 'FN'])
         pyplot.xlabel('Threshold')
         pyplot.xlim([thresholds[0], thresholds[-1]])
         pyplot.show()
+        fig.savefig(join(target_dir, 'thresholds.eps'), format='eps')
 
         # Plot precision, recall, F1
         prf, optimal_val = compute_prfo(thresholds, vals)
 
-        pyplot.figure(1)
+        fig = pyplot.figure(1)
         pyplot.grid()
         pyplot.plot(thresholds, prf)
 
@@ -54,3 +62,4 @@ if __name__ == "__main__":
         # pyplot.ylim([0, 1])
 
         pyplot.xlabel('Threshold')
+        fig.savefig(join(target_dir, 'prft.eps'), format='eps')
