@@ -1,0 +1,55 @@
+\documentclass[11pt]{article}
+
+\usepackage[czech]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,width=150mm,top=25mm,bottom=30mm]{geometry}
+\usepackage{setspace, enumitem, csquotes, amsmath, amsfonts, amsthm, soul, float, hyperref, fancyhdr, listings}
+\usepackage{graphicx}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Jan Beneš, A18N0051P}
+\lhead{Arcface}
+\rfoot{Strana \thepage}
+
+\setstretch{1.5}
+
+\lstset{
+columns=fullflexible,
+%keywordstyle=\color{keywords},
+frame=lines,
+language=Python,
+basicstyle=\small,
+commentstyle=\it\footnotesize\color{Gray}
+}
+
+\renewcommand{\lstlistingname}{Kód}
+
+\begin{document}
+    \section{Výpočet příznakových vektorů}
+    Prvním úkolem bylo vypočítání příznakových vektorů pro celý dataset.
+
+    \subsection{Popis datasetu}
+    Dataset se skládá celkem z 15 videí a stejného počtu anotačních souborů ve formátu \textit{json}.
+    Videa jsou záznamem večerních událostí České Televize.
+    Anotační soubory obsahují slovník, kde klíčem je jméno.
+    Pod tímto klíčem je uložen seznam detekcí.
+    Každá detekce je opět slovníkem.
+    Tento slovník obsahuje číslo a oblast snímku, ve kterým se nachází obličej daného člověka.
+
+    \subsection{Popis implementace}
+    Samotný výpočet funguje následovně:
+    \begin{enumerate}
+        \item Nejprve proiteruji přes všechna videa.
+        \item Dále proiteruji před jednotlivá jména a detekce.
+        \item Ze snímku vyříznu oblast s obličejem, převedu oblast do greyscale a změnim velikost na 128x128.
+        \item Tento snímek a jeho převrácenou verzi uložím do pole dimenze 2x1x128x128.
+        \item Takto vytvořené pole dále předložím již natrénovanému modelu ResNet-18, čímž získám příznakový vektor.
+        \item Příznakový vektor a číslo odpovídající jménu uložím do pole.
+        \item Výsledné pole všech příznakových vektorů uložím pomocí modulu h5py na disk.
+    \end{enumerate}
+
+    \section{Naprahování vzdáleností}
+
+
+\end{document}
