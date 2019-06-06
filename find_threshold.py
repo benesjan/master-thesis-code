@@ -66,8 +66,8 @@ if __name__ == "__main__":
     start_time = time()
 
     # 1) Open the h5 file
-    with h5py.File(conf.DB_PATH, 'r') as h5f, \
-            h5py.File(conf.THRESHOLD_VALS, 'w') as h5t, open(conf.PROGRESS_FILE, 'w', 1) as pf:
+    with h5py.File(conf.DB_PATH_LFW, 'r') as h5f, \
+            h5py.File(conf.THRESHOLD_VALS_LFW, 'w') as h5t, open(conf.PROGRESS_FILE, 'w', 1) as pf:
         FEATURES = h5f['features']
         LABELS = h5f['labels']
 

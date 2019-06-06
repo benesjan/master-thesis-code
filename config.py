@@ -34,6 +34,7 @@ class Config:
         self.LABEL_MAP = f'{home_dir}/label_map.pickle'
 
         self.THRESHOLD_VALS = f'{home_dir}/threshold_vals.h5'
+        self.THRESHOLD_VALS_LFW = f'{home_dir}/threshold_vals_lfw.h5'
 
         self.PROGRESS_FILE = f'{home_dir}/progress.txt'
 
@@ -53,6 +54,7 @@ class Config:
         self.LABEL_MAP = 'out/label_map.pickle'
 
         self.THRESHOLD_VALS = 'out/threshold_vals.h5'
+        self.THRESHOLD_VALS_LFW = 'out/threshold_vals_lfw.h5'
 
         self.PROGRESS_FILE = 'out/progress.txt'
 
