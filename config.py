@@ -9,7 +9,6 @@ class Config:
 
     def __init__(self):
         self.BATCH_SIZE = 60
-        self.DEVICE = torch.device('cpu')
 
         # Constant which specifies whether to move the image selection if it crosses the image border
         # If false the frame will be ignored
@@ -38,6 +37,7 @@ class Config:
 
         self.PROGRESS_FILE = f'{home_dir}/progress.txt'
 
+        self.DEVICE = torch.device("cuda")
         self.CPU_COUNT = 8
 
     def _set_home(self):
@@ -56,4 +56,5 @@ class Config:
 
         self.PROGRESS_FILE = 'out/progress.txt'
 
+        self.DEVICE = torch.device('cpu')
         self.CPU_COUNT = cpu_count()

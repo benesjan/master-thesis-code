@@ -43,6 +43,8 @@ def predict(model, images):
 if __name__ == '__main__':
     conf = Config()
 
+    batch_size = 100
+
     # 1) Load model
     model = resnet_face18(False)
     model = DataParallel(model)
@@ -54,13 +56,14 @@ if __name__ == '__main__':
 
     # 2) Get video names
     names = listdir(conf.LFW_PATH)
+    names_len = len(names)
 
     # 3) Open the h5 file
     with h5py.File(conf.DB_PATH_LFW, 'w') as h5f:
         try:
-            labels, images = [], []
+            labels, images, features = [], [], []
             for label, name in enumerate(names):
-                print(f'Processing {name}')
+                print(f'{label + 1}/{names_len} - {name}')
 
                 for image_name in listdir(path.join(conf.LFW_PATH, name)):
                     image = cv2.imread(path.join(conf.LFW_PATH, name, image_name), cv2.IMREAD_GRAYSCALE)
@@ -69,9 +72,14 @@ if __name__ == '__main__':
                     labels.append(label)
                     images.append(processed_image)
 
-            print('Computing the features')
-            images = np.vstack(images)
-            features = predict(model, images)
+                if len(images) > batch_size:
+                    print('Computing the features')
+                    images_array = np.vstack(images)
+                    feature_batch = predict(model, images_array)
+                    features.append(feature_batch)
+                    images = []
+
+            features = np.vstack(features)
 
             # 7) save the features and names
             h5f.create_dataset('features', data=features)
