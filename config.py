@@ -26,10 +26,12 @@ class Config:
 
         self.VIDEO_PATH = f'{home_dir}/Faces/videos/'
         self.ANNOTATIONS_PATH = f'{home_dir}/Faces/CEMI-annotations-Udalosti/'
+        self.LFW_PATH = '/storage/plzen1/home/benesjan/datasets/lfw-align-128'
 
         self.MODEL_PATH = f'{home_dir}/checkpoints/resnet18_110.pth'
         self.DB_PATH = f'{home_dir}/features_merged.h5'
         self.DB_PATH_RAW = f'{home_dir}/features.h5'
+        self.DB_PATH_LFW = f'{home_dir}/features_lfw.h5'
         self.LABEL_MAP = f'{home_dir}/label_map.pickle'
 
         self.THRESHOLD_VALS = f'{home_dir}/threshold_vals.h5'
@@ -42,10 +44,12 @@ class Config:
 
         self.VIDEO_PATH = 'data/videos/'
         self.ANNOTATIONS_PATH = 'data/CEMI-annotations-Udalosti/'
+        self.LFW_PATH = '/home/honza/Data/datasets/lfw-align-128'
 
         self.MODEL_PATH = 'checkpoints/resnet18_110.pth'
         self.DB_PATH = 'out/features_merged.h5'
         self.DB_PATH_RAW = 'out/features.h5'
+        self.DB_PATH_LFW = 'out/features_lfw.h5'
         self.LABEL_MAP = 'out/label_map.pickle'
 
         self.THRESHOLD_VALS = 'out/threshold_vals.h5'
