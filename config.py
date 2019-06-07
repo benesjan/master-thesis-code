@@ -2,7 +2,7 @@ from multiprocessing import cpu_count
 
 import torch
 
-from settings import META_ENV
+from settings import META_ENV, DATASET_NAME
 
 
 class Config:
@@ -20,12 +20,9 @@ class Config:
             self._set_home()
 
     def _set_meta(self):
-
         home_dir = '/storage/plzen1/home/benesjan/spcdata'
 
-        self.VIDEO_PATH = f'{home_dir}/Faces/videos/'
-        self.ANNOTATIONS_PATH = f'{home_dir}/Faces/CEMI-annotations-Udalosti/'
-        self.LFW_PATH = '/storage/plzen1/home/benesjan/datasets/lfw-align-128'
+        self.DATASET = f'/storage/plzen1/home/benesjan/datasets/{DATASET_NAME}'
 
         self.MODEL_PATH = f'{home_dir}/checkpoints/resnet18_110.pth'
         self.DB_PATH = f'{home_dir}/features_merged.h5'
@@ -41,11 +38,14 @@ class Config:
         self.DEVICE = torch.device("cuda")
         self.CPU_COUNT = 8
 
-    def _set_home(self):
+        self.VIDEO_PATH = f'{home_dir}/Faces/videos/'
+        self.ANNOTATIONS_PATH = f'{home_dir}/Faces/CEMI-annotations-Udalosti/'
 
-        self.VIDEO_PATH = 'data/videos/'
-        self.ANNOTATIONS_PATH = 'data/CEMI-annotations-Udalosti/'
-        self.LFW_PATH = '/home/honza/Data/datasets/lfw-align-128'
+    def _set_home(self):
+        dataset_dir = '/home/honza/Data/ML/datasets'
+
+        # Paths to datasets in standard format
+        self.DATASET = f'{dataset_dir}/{DATASET_NAME}'
 
         self.MODEL_PATH = 'checkpoints/resnet18_110.pth'
         self.DB_PATH = 'out/features_merged.h5'
@@ -60,3 +60,7 @@ class Config:
 
         self.DEVICE = torch.device('cpu')
         self.CPU_COUNT = cpu_count()
+
+        # Path to unprocessed FAV dataset
+        self.VIDEO_PATH = f'{dataset_dir}/fav_raw/videos/'
+        self.ANNOTATIONS_PATH = f'{dataset_dir}/fav_raw/CEMI-annotations-Udalosti/'
