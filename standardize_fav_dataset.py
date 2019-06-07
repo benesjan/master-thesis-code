@@ -26,20 +26,15 @@ def get_square(rect, im_res):
     return left, rect[1], right, rect[3]
 
 
-# returns an image with selected face
 # video - the opened video object
-# frame - the frame number
-# rect - the rectangle of the face
-def get_face(video, frame, rect):
+# frame_id - the frame number
+def get_frame(video, frame_id):
     # set the frame position of the videofile to specific frame number
-    video.set(cv2.CAP_PROP_POS_FRAMES, frame)
-    video.set(cv2.COLOR_BGR2GRAY, frame)
+    video.set(cv2.CAP_PROP_POS_FRAMES, frame_id)
+    video.set(cv2.COLOR_BGR2GRAY, frame_id)
     # read the image from the video
-    ret, im = video.read()
-
-    square = get_square(rect, im.shape)
-
-    return im[square[1]:square[3], square[0]:square[2], :]
+    _, im = video.read()
+    return im
 
 
 def move_selection(selection, resolution):
@@ -78,10 +73,17 @@ def get_next_image(video, annotations):
                         # Ignore the frame
                         continue
 
-                im = get_face(video, frame, rect)
-                im_rsz = cv2.resize(im, (128, 128))
+                # Load the frame
+                im = get_frame(video, frame)
 
-                yield name, frame, im_rsz
+                # Transform the selection into square
+                rect = get_square(rect, im.shape)
+                # Select the image part corresponding to the face
+                im = im[rect[1]:rect[3], rect[0]:rect[2], :]
+                # Resize the image
+                im = cv2.resize(im, (128, 128))
+
+                yield name, frame, im
         except Exception as e:
             print(f"An error occurred when processing image of {name}\n{e}")
 
