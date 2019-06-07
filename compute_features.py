@@ -59,7 +59,7 @@ if __name__ == '__main__':
     names_len = len(names)
 
     # 3) Open the h5 file
-    with h5py.File(conf.DB_PATH_LFW, 'w') as h5f:
+    with h5py.File(conf.FEATURES, 'w') as h5f:
         try:
             labels, images, features = [], [], []
             for label, name in enumerate(names):
