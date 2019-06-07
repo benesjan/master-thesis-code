@@ -23,7 +23,7 @@ def get_square(rect, im_res):
     elif right > im_res[0]:
         left = im_res[0] - selection_height
         right = im_res[0]
-    return left, rect[1], right, rect[3]
+    return [left, rect[1], right, rect[3]]
 
 
 # video - the opened video object
@@ -65,6 +65,9 @@ def get_next_image(video, annotations):
                 frame = detection['frame']
                 rect = detection['rect']
 
+                # Transform the selection into square
+                rect = get_square(rect, resolution)
+
                 # Check if the selection crosses the image border
                 if rect[0] < 0 or rect[2] > resolution[0] or rect[1] < 0 or rect[3] > resolution[1]:
                     if conf.MOVE_SELECTION:
@@ -76,8 +79,6 @@ def get_next_image(video, annotations):
                 # Load the frame
                 im = get_frame(video, frame)
 
-                # Transform the selection into square
-                rect = get_square(rect, im.shape)
                 # Select the image part corresponding to the face
                 im = im[rect[1]:rect[3], rect[0]:rect[2], :]
                 # Resize the image
