@@ -102,6 +102,9 @@ if __name__ == '__main__':
     for video_name in videos:
         print(f"Processing {video_name}")
 
+        # Used in file name
+        video_date = video_name.split('_')[2]
+
         # 3) Load the annotations
         with open(conf.ANNOTATIONS_PATH + video_name + "_people.json", "r") as f:
             annotations = json.load(f)
@@ -116,7 +119,7 @@ if __name__ == '__main__':
 
         for name, frame, image in get_next_image(video, annotations):
             name_formated = name.replace(' ', '_')
-            image_name = f'{name_formated}_{frame}.jpg'
+            image_name = f'{name_formated}_{frame}_{video_date}.jpg'
             dir_path = path.join(conf.DATASET, name_formated)
 
             # Create directory in the dataset folder if it doesn't exist

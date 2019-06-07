@@ -28,7 +28,8 @@ def process_face(im):
 
 # Get features for 1 batch
 def predict(model, images):
-    data = torch.from_numpy(images)
+    images_array = np.vstack(images)
+    data = torch.from_numpy(images_array)
     data = data.to(conf.DEVICE)
     output = model(data)
     output = output.data.cpu().numpy()
@@ -73,11 +74,15 @@ if __name__ == '__main__':
                     images.append(processed_image)
 
                 if len(images) > batch_size:
-                    print('Computing the features')
-                    images_array = np.vstack(images)
-                    feature_batch = predict(model, images_array)
+                    print('Computing features')
+                    feature_batch = predict(model, images)
                     features.append(feature_batch)
                     images = []
+
+            # Process any remaining images
+            if len(images) > 0:
+                feature_batch = predict(model, images)
+                features.append(feature_batch)
 
             features = np.vstack(features)
 
