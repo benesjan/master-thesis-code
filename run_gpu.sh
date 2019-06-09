@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#PBS -l select=1:ncpus=2:ngpus=2:cl_gram=False:cl_konos=False:mem=5gb
+#PBS -l select=1:ncpus=2:ngpus=1:cl_gram=False:cl_konos=False:mem=8gb
 #PBS -l walltime=12:00:00
 #PBS -q gpu
 

@@ -73,11 +73,11 @@ if __name__ == '__main__':
                     labels.append(label)
                     images.append(processed_image)
 
-                if len(images) > batch_size:
-                    print('Computing features')
-                    feature_batch = predict(model, images)
-                    features.append(feature_batch)
-                    images = []
+                    if len(images) == batch_size:
+                        print(f'Computing features on {len(images)} images')
+                        feature_batch = predict(model, images)
+                        features.append(feature_batch)
+                        images.clear()
 
             # Process any remaining images
             if len(images) > 0:
