@@ -60,8 +60,8 @@ if __name__ == '__main__':
     names_len = len(names)
 
     # 3) Open the h5 file
-    with h5py.File(conf.FEATURES, 'w') as h5f:
-        try:
+    try:
+        with torch.no_grad():
             labels, images, features = [], [], []
             for label, name in enumerate(names):
                 print(f'{label + 1}/{names_len} - {name}')
@@ -84,13 +84,13 @@ if __name__ == '__main__':
                 feature_batch = predict(model, images)
                 features.append(feature_batch)
 
-            features = np.vstack(features)
+        features = np.vstack(features)
 
+        with h5py.File(conf.FEATURES, 'w') as h5f:
             # 7) save the features and names
             h5f.create_dataset('features', data=features)
             h5f.create_dataset('labels', data=labels)
             h5f.flush()
 
-        except KeyboardInterrupt as e:
-            print('KeyboardInterrupt has been caught. Exiting...')
-            h5f.flush()
+    except KeyboardInterrupt as e:
+        print('KeyboardInterrupt has been caught. Exiting...')
