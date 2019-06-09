@@ -44,8 +44,6 @@ def predict(model, images):
 if __name__ == '__main__':
     conf = Config()
 
-    batch_size = 100
-
     # 1) Load model
     model = resnet_face18(False)
     model = DataParallel(model)
@@ -73,8 +71,7 @@ if __name__ == '__main__':
                     labels.append(label)
                     images.append(processed_image)
 
-                    if len(images) == batch_size:
-                        print(f'Computing features on {len(images)} images')
+                    if len(images) == conf.BATCH_SIZE:
                         feature_batch = predict(model, images)
                         features.append(feature_batch)
                         images.clear()

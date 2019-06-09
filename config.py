@@ -8,7 +8,7 @@ from settings import META_ENV, DATASET_NAME
 class Config:
 
     def __init__(self):
-        self.BATCH_SIZE = 60
+        self.BATCH_SIZE = 200
 
         # Constant which specifies whether to move the image selection if it crosses the image border
         # If false the frame will be ignored
