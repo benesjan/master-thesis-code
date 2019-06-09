@@ -4,7 +4,7 @@ from os import listdir, path
 import cv2
 
 from config import Config
-from utils import create_dir
+from utils import create_dir, strip_accents
 
 
 def get_square(rect, im_res):
@@ -118,9 +118,9 @@ if __name__ == '__main__':
             continue
 
         for name, frame, image in get_next_image(video, annotations):
-            name_formated = name.replace(' ', '_')
-            image_name = f'{name_formated}_{frame}_{video_date}.jpg'
-            dir_path = path.join(conf.DATASET, name_formated)
+            name_formatted = strip_accents(name.replace(' ', '_'))
+            image_name = f'{name_formatted}_{frame}_{video_date}.jpg'
+            dir_path = path.join(conf.DATASET, name_formatted)
 
             # Create directory in the dataset folder if it doesn't exist
             create_dir(dir_path)
