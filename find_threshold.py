@@ -68,8 +68,7 @@ if __name__ == "__main__":
     start_time = time()
 
     # 1) Open the h5 file
-    with h5py.File(conf.FEATURES, 'r') as h5f, \
-            h5py.File(conf.THRESHOLD_VALS, 'w') as h5t, open(conf.PROGRESS_FILE, 'w', 1) as pf:
+    with h5py.File(conf.FEATURES, 'r') as h5f, h5py.File(conf.THRESHOLD_VALS, 'w') as h5t:
         FEATURES = h5f['features']
         LABELS = h5f['labels']
 
@@ -88,12 +87,8 @@ if __name__ == "__main__":
             processing_time = (time() - start_time) / 3600
             percents_processed = processed_count / NUM_PAIRS * 100
             estimated_remaining = (processing_time / percents_processed * 100) - processing_time
-            printout = f"{percents_processed}% processed in {processing_time} hours. " \
-                f"Estimated remaining time: {estimated_remaining} hours.\n"
-            print(printout)
-            pf.seek(0)
-            pf.write(printout)
-            pf.flush()
+            print(f"{percents_processed}% processed in {processing_time} hours. "
+                  f"Estimated remaining time: {estimated_remaining} hours.\n")
 
         h5t.create_dataset("vals", data=result)
         h5t.create_dataset("thresholds", data=THRESHOLDS)

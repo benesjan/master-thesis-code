@@ -33,8 +33,6 @@ class Config:
 
         self.THRESHOLD_VALS = f'{home_dir}/thresholds_{DATASET_NAME}.h5'
 
-        self.PROGRESS_FILE = f'{home_dir}/progress.txt'
-
         self.VIDEO_PATH = f'{home_dir}/Faces/videos/'
         self.ANNOTATIONS_PATH = f'{home_dir}/Faces/CEMI-annotations-Udalosti/'
 
@@ -52,8 +50,6 @@ class Config:
         self.FEATURES = f'out/features_{DATASET_NAME}.h5'
 
         self.THRESHOLD_VALS = f'out/thresholds_{DATASET_NAME}.h5'
-
-        self.PROGRESS_FILE = 'out/progress.txt'
 
         # Path to the unprocessed FAV dataset
         self.VIDEO_PATH = f'{dataset_dir}/fav_raw/videos/'

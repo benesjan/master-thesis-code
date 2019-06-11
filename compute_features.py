@@ -77,8 +77,8 @@ if __name__ == '__main__':
                             feature_batch = predict(model, images)
                             features.append(feature_batch)
                             images.clear()
-                    except UnicodeEncodeError as e:
-                        print(f"{e}\npath parts to join {conf.DATASET} {name}, {image_name}")
+                    except Exception as e:
+                        print(f"{e}\npath parts to join {conf.DATASET}, {name}, {image_name}")
             # Process any remaining images
             if len(images) > 0:
                 feature_batch = predict(model, images)

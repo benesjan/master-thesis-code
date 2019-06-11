@@ -8,5 +8,6 @@ def create_dir(path):
 
 
 def strip_accents(s):
+    """Replaces accentual characters with ASCII counterparts, or removes them if counterpart not present"""
     return ''.join(c for c in unicodedata.normalize('NFD', s)
-                   if unicodedata.category(c) != 'Mn')
+                   if unicodedata.category(c) != 'Mn').encode('ascii', 'ignore')
