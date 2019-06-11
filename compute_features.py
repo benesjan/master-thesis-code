@@ -56,6 +56,7 @@ if __name__ == '__main__':
     # 2) Get video names
     names = listdir(conf.DATASET)
     names_len = len(names)
+    names.sort()
 
     # 3) Open the h5 file
     try:
@@ -65,17 +66,19 @@ if __name__ == '__main__':
                 print(f'{label + 1}/{names_len} - {name}')
 
                 for image_name in listdir(path.join(conf.DATASET, name)):
-                    image = cv2.imread(path.join(conf.DATASET, name, image_name), cv2.IMREAD_GRAYSCALE)
-                    processed_image = process_face(image)
+                    try:
+                        image = cv2.imread(path.join(conf.DATASET, name, image_name), cv2.IMREAD_GRAYSCALE)
+                        processed_image = process_face(image)
 
-                    labels.append(label)
-                    images.append(processed_image)
+                        labels.append(label)
+                        images.append(processed_image)
 
-                    if len(images) == conf.BATCH_SIZE:
-                        feature_batch = predict(model, images)
-                        features.append(feature_batch)
-                        images.clear()
-
+                        if len(images) == conf.BATCH_SIZE:
+                            feature_batch = predict(model, images)
+                            features.append(feature_batch)
+                            images.clear()
+                    except UnicodeEncodeError as e:
+                        print(f"{e}\npath parts to join {conf.DATASET} {name}, {image_name}")
             # Process any remaining images
             if len(images) > 0:
                 feature_batch = predict(model, images)

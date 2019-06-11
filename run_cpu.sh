@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-#PBS -l select=1:ncpus=8:mem=32gb
+#PBS -l select=1:ncpus=8:mem=16gb
 #PBS -l walltime=120:00:00
-#PBS -q cpu
 
 module add python-3.6.2-gcc
 module add python36-modules-gcc

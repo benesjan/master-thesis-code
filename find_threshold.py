@@ -63,6 +63,8 @@ def process_distances(interval_pair):
 if __name__ == "__main__":
     conf = Config()
 
+    INTERVAL_LENGTH = 4000
+
     start_time = time()
 
     # 1) Open the h5 file
@@ -72,7 +74,7 @@ if __name__ == "__main__":
         LABELS = h5f['labels']
 
         THRESHOLDS = np.arange(0, 2, 0.005)
-        INTERVALS = generate_intervals(FEATURES.shape[0], 10000)
+        INTERVALS = generate_intervals(FEATURES.shape[0], INTERVAL_LENGTH)
 
         NUM_PAIRS = len(INTERVALS) * (len(INTERVALS) + 1) / 2
 
