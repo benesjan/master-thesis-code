@@ -4,7 +4,7 @@ import h5py
 from matplotlib import pyplot
 import numpy as np
 
-from config import Config
+from config import Config, DATASET_NAME
 from utils import create_dir
 
 
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         pyplot.xlabel('Threshold')
         pyplot.xlim([thresholds[0], thresholds[-1]])
         pyplot.show()
-        fig.savefig(join(target_dir, 'thresholds.eps'), format='eps')
+        fig.savefig(join(target_dir, f'thresholds_{DATASET_NAME}.eps'), format='eps')
 
         # Plot precision, recall, F1
         prf, optimal_val = compute_prfo(thresholds, vals)
@@ -62,4 +62,4 @@ if __name__ == "__main__":
         # pyplot.ylim([0, 1])
 
         pyplot.xlabel('Threshold')
-        fig.savefig(join(target_dir, 'prft.eps'), format='eps')
+        fig.savefig(join(target_dir, f'prft_{DATASET_NAME}.eps'), format='eps')
