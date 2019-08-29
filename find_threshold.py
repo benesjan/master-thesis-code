@@ -79,9 +79,9 @@ if __name__ == "__main__":
 
         pool = mp.Pool(conf.CPU_COUNT)
 
-        result = np.zeros((len(THRESHOLDS), 4), dtype=np.uint64)
-        for processed_count, res_x in enumerate(pool.imap(process_distances, get_next_pair(INTERVALS)), 1):
-            result += res_x
+        vals = np.zeros((len(THRESHOLDS), 4), dtype=np.uint64)
+        for processed_count, vals_x in enumerate(pool.imap(process_distances, get_next_pair(INTERVALS)), 1):
+            vals += vals_x
 
             # Printout
             processing_time = (time() - start_time) / 3600
@@ -90,5 +90,5 @@ if __name__ == "__main__":
             print(f"{percents_processed}% processed in {processing_time} hours. "
                   f"Estimated remaining time: {estimated_remaining} hours.\n")
 
-        h5t.create_dataset("vals", data=result)
+        h5t.create_dataset("vals", data=vals)
         h5t.create_dataset("thresholds", data=THRESHOLDS)
