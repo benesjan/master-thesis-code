@@ -4,26 +4,8 @@ from os import listdir, path
 import cv2
 
 from config import Config
+from data_processing.face_utils import get_aligned_face
 from utils import create_dir, strip_accents
-
-
-def get_square(rect, im_res):
-    selection_height = rect[3] - rect[1]
-    # make sure the selection height is even
-    if selection_height & 1:
-        selection_height -= 1
-        rect[3] -= 1
-    width_middle = (rect[0] + rect[2]) / 2
-    left = int(width_middle - (selection_height / 2))
-    right = int(width_middle + (selection_height / 2))
-    # make sure the selection is within the image boundaries
-    if left < 0:
-        left = 0
-        right = selection_height
-    elif right > im_res[0]:
-        left = im_res[0] - selection_height
-        right = im_res[0]
-    return [left, rect[1], right, rect[3]]
 
 
 # video - the opened video object
@@ -37,23 +19,6 @@ def get_frame(video, frame_id):
     return im
 
 
-def move_selection(selection, resolution):
-    # selection = [x1, y1, x2, y2], resolution= (width, height)
-    if selection[0] < 0:
-        selection[2] -= selection[0]
-        selection[0] = 0
-    elif selection[2] > resolution[0]:
-        selection[0] -= (selection[2] - resolution[0])
-        selection[2] = resolution[0]
-    if selection[1] < 0:
-        selection[3] -= selection[1]
-        selection[1] = 0
-    elif selection[3] > resolution[1]:
-        selection[1] -= (selection[3] - resolution[1])
-        selection[3] = resolution[1]
-    return selection
-
-
 def get_next_image(video, annotations):
     resolution = (int(video.get(cv2.CAP_PROP_FRAME_WIDTH)), int(video.get(cv2.CAP_PROP_FRAME_HEIGHT)))
     num_of_names = len(annotations.keys())
@@ -65,24 +30,13 @@ def get_next_image(video, annotations):
                 frame = detection['frame']
                 rect = detection['rect']
 
-                # Transform the selection into square
-                rect = get_square(rect, resolution)
-
-                # Check if the selection crosses the image border
-                if rect[0] < 0 or rect[2] > resolution[0] or rect[1] < 0 or rect[3] > resolution[1]:
-                    if conf.MOVE_SELECTION:
-                        rect = move_selection(rect, resolution)
-                    else:
-                        # Ignore the frame
-                        continue
-
                 # Load the frame
                 im = get_frame(video, frame)
 
-                # Select the image part corresponding to the face
-                im = im[rect[1]:rect[3], rect[0]:rect[2], :]
-                # Resize the image
-                im = cv2.resize(im, (128, 128))
+                im = get_aligned_face(im, rect)
+                if im is None:
+                    print(f"Intersection of bounding boxes not found. Skipping the image\nName: {name}, Frame: {frame}")
+                    continue
 
                 yield name, frame, im
         except Exception as e:
