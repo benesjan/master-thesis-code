@@ -11,4 +11,11 @@ module add opencv-3.4.5-py36-cuda10.1
 home_dir="/storage/plzen1/home/benesjan"
 timestamp=$(date +%s)
 
+export TMPDIR=$home_dir/tmp
+
+virtualenv $home_dir/myenv
+source $home_dir/myenv/bin/activate
+
+pip install git+https://github.com/benesjan/mtcnn-pytorch.git
+
 python "$home_dir/spc/$SCRIPT_NAME.py" > "$home_dir/output_gpu_$timestamp.txt"
