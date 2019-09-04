@@ -1,5 +1,4 @@
 import json
-import sys
 from os import listdir, path
 import cv2
 
@@ -19,38 +18,10 @@ def get_frame(video, frame_id):
     return im
 
 
-def get_next_image(video, annotations):
-    resolution = (int(video.get(cv2.CAP_PROP_FRAME_WIDTH)), int(video.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-    num_of_names = len(annotations.keys())
-    for i, name in enumerate(annotations.keys()):
-        print(f"\t{i + 1}/{num_of_names} {name}")
-        try:
-            for detection in annotations[name]['detections']:
-                # Get the cropped image
-                frame = detection['frame']
-                rect = detection['rect']
-
-                # Load the frame
-                im = get_frame(video, frame)
-
-                im = get_aligned_face(im, rect)
-                if im is None:
-                    print(f"Intersection of bounding boxes not found. Skipping the image\nName: {name}, Frame: {frame}")
-                    continue
-
-                yield name, frame, im
-        except Exception as e:
-            print(f"An error occurred when processing image of {name}\n{e}")
-
-
 if __name__ == '__main__':
     conf = Config()
 
-    if path.exists(conf.DATASET):
-        print(f'Dataset folder {conf.DATASET} already exists. Aborting')
-        sys.exit()
-
-    # 2) Get video names
+    # 1) Get video names
     videos = listdir(conf.VIDEO_PATH)
 
     for video_name in videos:
@@ -59,25 +30,51 @@ if __name__ == '__main__':
         # Used in file name
         video_date = video_name.split('_')[2]
 
-        # 3) Load the annotations
+        # 2) Load the annotations
         with open(conf.ANNOTATIONS_PATH + video_name + "_people.json", "r") as f:
             annotations = json.load(f)
 
-        # 4) load the video
+        # 3) load the video
         video = cv2.VideoCapture(conf.VIDEO_PATH + video_name)
 
-        # 5) check if the video file opened successfully, if not continue with another one
+        # 4) check if the video file opened successfully, if not continue with another one
         if not video.isOpened():
             print(f'The videofile {video_name} could not be opened!')
             continue
 
-        for name, frame, image in get_next_image(video, annotations):
-            name_formatted = strip_accents(name.replace(' ', '_'))
-            image_name = f'{name_formatted}_{frame}_{video_date}.jpg'
-            dir_path = path.join(conf.DATASET, name_formatted)
+        num_of_names = len(annotations.keys())
+        # 5) Iterate over names
+        for i, name in enumerate(annotations.keys()):
+            print(f"\t{i + 1}/{num_of_names} {name}")
+            try:
+                # 6) Iterate over detections which belong to the name
+                for detection in annotations[name]['detections']:
+                    frame = detection['frame']
+                    rect = detection['rect']
 
-            # Create directory in the dataset folder if it doesn't exist
-            create_dir(dir_path)
+                    # 7) Format names and create paths
+                    name_formatted = strip_accents(name.replace(' ', '_'))
+                    image_name = f'{name_formatted}_{frame}_{video_date}.jpg'
+                    dir_path = path.join(conf.DATASET, name_formatted)
+                    image_path = path.join(dir_path, image_name)
 
-            # Save the image
-            cv2.imwrite(path.join(dir_path, image_name), image)
+                    if path.isfile(image_path):
+                        print(f"Image {image_name} already exists. Skipping")
+                        continue
+
+                    create_dir(dir_path)
+
+                    # Load the frame
+                    im = get_frame(video, frame)
+
+                    # 8) Detect and align face
+                    im = get_aligned_face(im, rect)
+                    if im is None:
+                        print("Intersection of bounding boxes not found. Skipping the image. "
+                              f"Name: {name}, Frame: {frame}")
+                        continue
+
+                    # 9) Save the image
+                    cv2.imwrite(image_path, im)
+            except Exception as e:
+                print(f"An error occurred when processing image of {name}\n{e}")
