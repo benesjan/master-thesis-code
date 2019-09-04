@@ -1,9 +1,7 @@
-import sys
-
 import cv2
+import numpy as np
 from PIL import Image
 from mtcnn.detector import detect_faces
-import numpy as np
 from skimage import transform as trans
 
 
