@@ -24,6 +24,7 @@ if __name__ == '__main__':
     # 1) Get video names
     videos = listdir(conf.VIDEO_PATH)
 
+    frame_counter = 0
     for video_name in videos:
         print(f"Processing {video_name}")
 
@@ -45,10 +46,11 @@ if __name__ == '__main__':
         num_of_names = len(annotations.keys())
         # 5) Iterate over names
         for i, name in enumerate(annotations.keys()):
-            print(f"\t{i + 1}/{num_of_names} {name}")
+            print(f"\t{i + 1}/{num_of_names} {name}, frame counter: {frame_counter}")
             try:
                 # 6) Iterate over detections which belong to the name
                 for detection in annotations[name]['detections']:
+                    frame_counter += 1
                     frame = detection['frame']
                     rect = detection['rect']
 
