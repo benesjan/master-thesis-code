@@ -38,9 +38,8 @@ def _transform(img, landmarks):
 
 
 def get_aligned_face(img_cv2, orig_bbox):
-    img = Image.fromarray(cv2.cvtColor(img_cv2, cv2.COLOR_BGR2RGB))
 
-    bounding_boxes, landmarks = detect_faces(img)
+    bounding_boxes, landmarks = detect_faces(img_cv2)
 
     for i, bbox in enumerate(bounding_boxes):
         if _intersects(bbox, orig_bbox):
