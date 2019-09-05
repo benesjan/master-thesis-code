@@ -1,4 +1,4 @@
-To install the face detecor dependency run the following command:
-```python
-pip install git+https://github.com/benesjan/mtcnn-pytorch.git
+To install the face dependencies run the following command:
+```bash
+pip install -r requirements.txt 
 ```
