@@ -1,5 +1,5 @@
 from multiprocessing import cpu_count
-
+import os
 import torch
 
 from settings import META_ENV, DATASET_NAME
@@ -40,7 +40,7 @@ class Config:
         self.DEVICE = torch.device('cpu')
         self.CPU_COUNT = cpu_count()
 
-        dataset_dir = '/home/honza/Data/ML/datasets'
+        dataset_dir = f'{os.environ["HOME"]}/Data/ML/datasets'
 
         self.MODEL_PATH = 'checkpoints/resnet18_110.pth'
 
