@@ -23,18 +23,18 @@ class Config:
         self.DEVICE = torch.device("cuda")
         self.CPU_COUNT = 8
 
-        home_dir = '/storage/plzen1/home/benesjan/spcdata'
+        data_dir = '/storage/plzen1/home/benesjan/spcdata'
 
-        self.MODEL_PATH = f'{home_dir}/checkpoints/resnet18_110.pth'
+        self.MODEL_PATH = f'{data_dir}/checkpoints/resnet18_110.pth'
 
-        self.DATASET = f'/storage/plzen1/home/benesjan/datasets/{DATASET_NAME}'
+        self.DATASET = f'{data_dir}/datasets/{DATASET_NAME}'
 
-        self.FEATURES = f'{home_dir}/features_{DATASET_NAME}.h5'
+        self.FEATURES = f'{data_dir}/features_{DATASET_NAME}.h5'
 
-        self.THRESHOLD_VALS = f'{home_dir}/thresholds_{DATASET_NAME}.h5'
+        self.THRESHOLD_VALS = f'{data_dir}/thresholds_{DATASET_NAME}.h5'
 
-        self.VIDEO_PATH = f'{home_dir}/Faces/videos/'
-        self.ANNOTATIONS_PATH = f'{home_dir}/Faces/CEMI-annotations-Udalosti/'
+        self.VIDEO_PATH = f'{data_dir}/datasets/fav_raw/videos/'
+        self.ANNOTATIONS_PATH = f'{data_dir}/datasets/fav_raw/CEMI-annotations-Udalosti/'
 
     def _set_home(self):
         self.DEVICE = torch.device('cpu')
