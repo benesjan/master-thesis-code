@@ -1,9 +1,10 @@
 import json
 from os import listdir, path
 import cv2
+from mtcnn import detect_faces
 
 from config import Config
-from data_processing.face_utils import get_aligned_face
+from data_processing.mtcnn_utils import get_bbox_i_by_IoU, frontalize_face
 from utils import create_dir, strip_accents
 
 
@@ -24,7 +25,7 @@ if __name__ == '__main__':
     # 1) Get video names
     videos = listdir(conf.VIDEO_PATH)
 
-    frame_counter = 0
+    processed_counter, skipped_counter, not_found_counter = 0, 0, 0
     for video_name in videos:
         print(f"Processing {video_name}")
 
@@ -46,11 +47,12 @@ if __name__ == '__main__':
         num_of_names = len(annotations.keys())
         # 5) Iterate over names
         for i, name in enumerate(annotations.keys()):
-            print(f"\t{i + 1}/{num_of_names} {name}, frame counter: {frame_counter}")
+            print(f"\t{i + 1}/{num_of_names} {name}, num. of frames processed: {processed_counter}, "
+                  f"skipped: {skipped_counter}, not found: {not_found_counter},"
+                  f" total: {processed_counter + skipped_counter + not_found_counter}")
             try:
                 # 6) Iterate over detections which belong to the name
                 for detection in annotations[name]['detections']:
-                    frame_counter += 1
                     frame = detection['frame']
                     rect = detection['rect']
 
@@ -61,7 +63,7 @@ if __name__ == '__main__':
                     image_path = path.join(dir_path, image_name)
 
                     if path.isfile(image_path):
-                        print(f"Image {image_name} already exists. Skipping")
+                        skipped_counter += 1
                         continue
 
                     create_dir(dir_path)
@@ -69,12 +71,18 @@ if __name__ == '__main__':
                     # Load the frame
                     im = get_frame(video, frame)
 
-                    # 8) Detect and align face
-                    im = get_aligned_face(im, rect)
-                    if im is None:
-                        print("Intersection of bounding boxes not found. Skipping the image. "
-                              f"Name: {name}, Frame: {frame}")
+                    # 8) Get bboxes and landmarks
+                    bounding_boxes, landmarks = detect_faces(im)
+                    bbox_i = get_bbox_i_by_IoU(bounding_boxes, rect)
+
+                    # 9) Skip the image if no bbox was selected
+                    if bbox_i == -1:
+                        not_found_counter += 1
                         continue
+
+                    processed_counter += 1
+                    # 10) Frontalize
+                    im = frontalize_face(im, landmarks[bbox_i])
 
                     # 9) Save the image
                     cv2.imwrite(image_path, im)
