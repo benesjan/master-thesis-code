@@ -58,15 +58,16 @@ if __name__ == '__main__':
     names_len = len(names)
     names.sort()
 
-    # 3) Open the h5 file
     try:
         with torch.no_grad():
             labels, images, features = [], [], []
+            # 3) Iterate over names and use name index as label
             for label, name in enumerate(names):
                 print(f'{label + 1}/{names_len} - {name}')
-
+                # 4) Iterate over images within the directory (dataset/name)
                 for image_name in listdir(path.join(conf.DATASET, name)):
                     try:
+                        # 5) Load and process the image
                         image = cv2.imread(path.join(conf.DATASET, name, image_name), cv2.IMREAD_GRAYSCALE)
                         processed_image = process_face(image)
 
@@ -74,20 +75,24 @@ if __name__ == '__main__':
                         images.append(processed_image)
 
                         if len(images) == conf.BATCH_SIZE:
+                            # 6) Get predictions for the batch
                             feature_batch = predict(model, images)
                             features.append(feature_batch)
                             images.clear()
                     except Exception as e:
                         print(f"{e}\npath parts to join {conf.DATASET}, {name}, {image_name}")
-            # Process any remaining images
+            # 7) Process any remaining images
             if len(images) > 0:
                 feature_batch = predict(model, images)
                 features.append(feature_batch)
 
+        # 8) Stack all the arrays of feature vectors (arrays of size (BATCH_SIZE, FEATURE_VECTOR_LENGTH))
+        # to one big array
         features = np.vstack(features)
 
+        # 9) Open the h5 file
         with h5py.File(conf.FEATURES, 'w') as h5f:
-            # 7) save the features and names
+            # 10) Save the features and names
             h5f.create_dataset('features', data=features)
             h5f.create_dataset('labels', data=labels)
             h5f.flush()
