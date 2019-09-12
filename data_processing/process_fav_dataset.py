@@ -1,11 +1,11 @@
 import json
-from os import listdir, path
 import cv2
+from os import listdir, path
 from mtcnn import detect_faces
 
 from config import Config
 from data_processing.mtcnn_utils import get_bbox_i_by_IoU, frontalize_face
-from utils import create_dir, strip_accents
+from utils import create_dir
 
 
 # video - the opened video object
@@ -57,7 +57,7 @@ if __name__ == '__main__':
                     rect = detection['rect']
 
                     # 7) Format names and create paths
-                    name_formatted = strip_accents(name.replace(' ', '_'))
+                    name_formatted = name.replace(' ', '_')
                     image_name = f'{name_formatted}_{frame}_{video_date}.jpg'
                     dir_path = path.join(conf.DATASET, name_formatted)
                     image_path = path.join(dir_path, image_name)
