@@ -4,5 +4,5 @@
 checkpoints
 out
 data
-settings.py
+env_dependent.py
 venv
