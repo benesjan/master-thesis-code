@@ -9,7 +9,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \rhead{Jan Beneš, A18N0051P}
-\lhead{Arcface}
+\lhead{Semestrální práce}
 \rfoot{Strana \thepage}
 
 \setstretch{1.5}
@@ -26,8 +26,12 @@ commentstyle=\it\footnotesize\color{Gray}
 \renewcommand{\lstlistingname}{Kód}
 
 \begin{document}
-    \section{Výpočet příznakových vektorů}\label{sec:features}
-    Prvním úkolem bylo vypočítání příznakových vektorů pro celý dataset.
+    \section*{Cíl práce}
+    Cílem této semestrální práce je naprogramování a zdokumentování procesu předzpracování dat~\ref{sec:preprocessing},
+    výpočtu příznakových vektorů~\ref{sec:features} a vyhodnocení statistik~\ref{sec:statistics}.
+
+
+    \section{Předzpracování dat}\label{sec:preprocessing}
 
     \subsection{Popis datasetu}\label{subsec:dataset}
     Dataset se skládá celkem z 15 videí a stejného počtu anotačních souborů ve formátu \textit{json}.
@@ -36,6 +40,9 @@ commentstyle=\it\footnotesize\color{Gray}
     Pod tímto klíčem je uložen seznam detekcí.
     Každá detekce je opět slovníkem.
     Tento slovník obsahuje číslo a oblast snímku, ve kterým se nachází obličej daného člověka.
+
+    \section{Výpočet příznakových vektorů}\label{sec:features}
+    Prvním úkolem bylo vypočítání příznakových vektorů pro celý dataset.
 
     \subsection{Implementace}\label{subsec:implementace}
     Samotný výpočet funguje následovně:
@@ -49,7 +56,7 @@ commentstyle=\it\footnotesize\color{Gray}
         \item Výsledné pole všech příznakových vektorů uložím pomocí modulu h5py na disk.
     \end{enumerate}
 
-    \section{Naprahování vzdáleností}\label{sec:prahovani}
+    \section{Vyhodnocení statistik}\label{sec:statistics}
     Druhým úkolem bylo naprahování vzdáleností pro každou dvojici příznakových vektorů a pro každý práh z množiny
     [0; 2; 0.05], kde 0.05 je krok.
 

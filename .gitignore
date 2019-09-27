@@ -1,8 +1,15 @@
-*.pyc
-*.pth
 .idea
 checkpoints
 out
 data
 env_dependent.py
 venv
+*.pyc
+*.pth
+*.gz
+*.pdf
+*.blg
+*.log
+*.out
+*.bbl
+*.aux
