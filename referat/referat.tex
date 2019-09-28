@@ -4,6 +4,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[a4paper,width=150mm,top=25mm,bottom=30mm]{geometry}
 \usepackage{setspace, enumitem, csquotes, amsmath, amsfonts, amsthm, soul, float, hyperref, fancyhdr, listings}
+\usepackage[obeyspaces]{url}
 \usepackage{graphicx}
 
 \pagestyle{fancy}
@@ -41,19 +42,39 @@ commentstyle=\it\footnotesize\color{Gray}
     Každá detekce je opět slovníkem.
     Tento slovník obsahuje číslo a oblast snímku, ve kterým se nachází obličej daného člověka.
 
-    \section{Výpočet příznakových vektorů}\label{sec:features}
-    Prvním úkolem bylo vypočítání příznakových vektorů pro celý dataset.
+    \subsection{Popis implementace předzpracování}
+    Výstupem předzpracování by měl být dataset ve formátu \path{dataset/name/image_128x128.jpg}.
+    Toho docílím následujícím algoritmem:
 
-    \subsection{Implementace}\label{subsec:implementace}
-    Samotný výpočet funguje následovně:
     \begin{enumerate}
         \item Nejprve proiteruji přes všechna videa.
         \item Dále proiteruji před jednotlivá jména a detekce.
-        \item Ze snímku vyříznu oblast s obličejem, převedu oblast do greyscale a změnim velikost na 128x128.
+        \item Pomocí balíku \textit{mtcnn-pytorch} detekuji všechny obličeje ve snímku příslušícím k detekci z minulého
+        bodu a zároveň k detekcím obdržím významné body obličeje ("landmarks").
+        \item Z nalezených detekcí vyberu tu, která má s původní detekcí největší "Intersection over Union (IoU)"
+        \item Dále pomocí polohy významných bodů a předem definovaného kýženého rozložení významných bodů provedu
+        takzvanou frontalizaci.
+        Frontalizace využívá metody nejmenších čtverců k nalezení afinní transformace.
+        Frontalizovaný obličej získáme aplikací této afinní transformace na původní snímek.
+        \item Snímek uložím.
+    \end{enumerate}
+
+
+    Využil jsem detekci pomocí \textit{mtcnn-pytorch} místo původně dodaných detekcí z toho důvodu, že je žádané,
+    aby byl obličej v jednotlivých snímcích vždy ve stejné pozici.
+    Tato úprava zlepší funkčnost modelu.
+
+
+    \section{Výpočet příznakových vektorů}\label{sec:features}
+    Jakmile máme dataset v kýženém formátu, můžeme přistoupit k výpočtu příznakových vektorů.
+    Tento výpočet probíhá následovně:
+    \begin{enumerate}
+        \item Proiteruji přes snímky v datasetu.
         \item Tento snímek a jeho převrácenou verzi uložím do pole dimenze 2x1x128x128.
-        \item Takto vytvořené pole dále předložím již natrénovanému modelu ResNet-18, čímž získám příznakový vektor.
+        \item Takto vytvořené pole dále předložím již natrénovanému modelu ResNet-18.
+        \item Na výstupu sítě získám příznakový vektor.
         \item Příznakový vektor a číslo odpovídající jménu uložím do pole.
-        \item Výsledné pole všech příznakových vektorů uložím pomocí modulu h5py na disk.
+        \item Výsledné pole všech příznakových vektorů uložím pomocí modulu \textit{h5py} na disk.
     \end{enumerate}
 
     \section{Vyhodnocení statistik}\label{sec:statistics}
@@ -74,7 +95,7 @@ commentstyle=\it\footnotesize\color{Gray}
         zda je dvojice patří do stejné třídy ři nikoliv.
         \item Nyní proiteruji přes všechny prahy, naprahuji matici a porovnáním s maticí značek vypočtu hodnoty
         \textit{True positive}, \textit{True negative}, \textit{False positive} a \textit{False negative}.
-        \item Hodnoty pro všechny dvojice intervalů sečtu a uložím na disk pomocí modulu h5py.
+        \item Hodnoty pro všechny dvojice intervalů sečtu a uložím na disk pomocí modulu \textit{h5py}.
     \end{enumerate}
 
     Níže vidíme grafy hodnot a F-míru.
