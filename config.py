@@ -19,4 +19,4 @@ class Config:
 
         # Path to the unprocessed dataset
         self.VIDEO_PATH = f'{DATA_DIR}/datasets/fav_raw/videos/'
-        self.ANNOTATIONS_PATH = f'{DATA_DIR}/datasets/fav_raw/CEMI-annotations-Udalosti/'
+        self.ANNOTATIONS_PATH = f'{DATA_DIR}/datasets/fav_raw/CEMI_Udalosti_facetracks_json/'
