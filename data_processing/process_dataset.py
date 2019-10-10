@@ -1,6 +1,8 @@
 import json
-import cv2
+import re
 from os import listdir, path
+
+import cv2
 from mtcnn import detect_faces
 
 from config import Config
@@ -22,18 +24,29 @@ def get_frame(video, frame_id):
 if __name__ == '__main__':
     conf = Config()
 
+    # 0) Extract the value of N out of dataset name if present.
+    N = 1
+    N_candidates = re.findall(r'N\d+', conf.DATASET)
+    if len(N_candidates) == 1:
+        N = int(N_candidates[0][1:])
+    elif len(N_candidates) > 1:
+        print(f'ERROR: Ambiguous dataset name {conf.DATASET}. Contains N\\d+ multiple times.')
+        exit(1)
+
+    print(f'Every Nth frame will be processed, N = {N}')
+
     # 1) Get video names
     videos = listdir(conf.VIDEO_PATH)
 
-    processed_counter, skipped_counter, not_found_counter = 0, 0, 0
+    processed_counter, skipped_counter, not_found_counter, N_counter = 0, 0, 0, 0
     for video_name in videos:
-        print(f"Processing {video_name}")
+        print(f'Processing {video_name}')
 
         # Used in file name
         video_date = video_name.split('_')[2]
 
         # 2) Load the annotations
-        with open(conf.ANNOTATIONS_PATH + video_name + "_people.json", "r") as f:
+        with open(conf.ANNOTATIONS_PATH + video_name + '_people.json', 'r') as f:
             annotations = json.load(f)
 
         # 3) load the video
@@ -47,12 +60,17 @@ if __name__ == '__main__':
         num_of_names = len(annotations.keys())
         # 5) Iterate over names
         for i, name in enumerate(annotations.keys()):
-            print(f"\t{i + 1}/{num_of_names} {name}, num. of frames processed: {processed_counter}, "
-                  f"skipped: {skipped_counter}, not found: {not_found_counter},"
-                  f" total: {processed_counter + skipped_counter + not_found_counter}")
+            print(f'\t{i + 1}/{num_of_names} {name}, num. of frames processed: {processed_counter}, '
+                  f'skipped: {skipped_counter}, not found: {not_found_counter},'
+                  f' total: {processed_counter + skipped_counter + not_found_counter}')
             try:
                 # 6) Iterate over detections which belong to the name
                 for detection in annotations[name]['detections']:
+                    if N_counter != N:
+                        N_counter += 1
+                        continue
+                    N_counter = 0
+
                     frame = detection['frame']
                     rect = detection['rect']
 
@@ -87,4 +105,4 @@ if __name__ == '__main__':
                     # 9) Save the image
                     cv2.imwrite(image_path, im)
             except Exception as e:
-                print(f"An error occurred when processing image of {name}\n{e}")
+                print(f'An error occurred when processing image of {name}\n{e}')

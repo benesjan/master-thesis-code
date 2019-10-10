@@ -44,6 +44,10 @@ path
      }   
    }
     ```
+   If you want to grab every Nth frame out of the video add N{number} at the end of the dataset name. For example:
+    ```
+    dataset_name_N10
+    ```
 
 2. Once the dataset is ready we can compute the feature vectors:
     ```bash
