@@ -26,7 +26,7 @@ def _bb_intersection_over_union(boxA, boxB):
 
     # compute the intersection over union by taking the intersection
     # area and dividing it by the sum of prediction + ground-truth
-    # areas - the interesection area
+    # areas - the intersection area
 
     if boxAArea + boxBArea - interArea == 0:
         return 0
@@ -37,12 +37,12 @@ def _bb_intersection_over_union(boxA, boxB):
     return iou
 
 
-def get_bbox_i_by_IoU(bboxes, orig_bbox):
-    # Select the bounding box with biggest interesection over union
-    bbox_i, max_IoU = -1, 0
+def get_bbox_i_by_IoU(bboxes, orig_bbox, threshold=0.4):
+    # Select the bounding box with biggest intersection over union
+    bbox_i, max_IoU = -1, threshold
     for i, cur_bbox in enumerate(bboxes):
         cur_IoU = _bb_intersection_over_union(cur_bbox, orig_bbox)
-        if cur_IoU != 0 and cur_IoU >= max_IoU:
+        if cur_IoU >= max_IoU:
             bbox_i, max_IoU = i, cur_IoU
     return bbox_i
 
