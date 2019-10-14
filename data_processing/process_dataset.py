@@ -1,6 +1,7 @@
 import json
 import re
 from os import listdir, path
+import numpy as np
 
 import cv2
 from mtcnn import detect_faces
@@ -61,7 +62,7 @@ if __name__ == '__main__':
         # 5) Iterate over names
         for i, name in enumerate(annotations.keys()):
             print(f'\t{i + 1}/{num_of_names} {name}, num. of frames processed: {processed_counter}, '
-                  f'skipped: {skipped_counter}, not found: {not_found_counter},'
+                  f'skipped: {skipped_counter}, not found by MTCNN: {not_found_counter},'
                   f' total: {processed_counter + skipped_counter + not_found_counter}')
             try:
                 # 6) Iterate over detections which belong to the name
@@ -74,9 +75,26 @@ if __name__ == '__main__':
                     frame = detection['frame']
                     rect = detection['rect']
 
+                    # Load the frame
+                    im = get_frame(video, frame)
+
+                    # 8) Get bboxes and landmarks
+                    bboxes, landmarks = detect_faces(im)
+                    bbox_i = get_bbox_i_by_IoU(bboxes, rect)
+
+                    # 9) Skip the image if no bbox was selected
+                    if bbox_i == -1:
+                        not_found_counter += 1
+                        continue
+
+                    face_landmarks = landmarks[bbox_i]
+                    face_bbox = np.round(bboxes[bbox_i], decimals=2)
+                    serialized_bbox = '_'.join(str(v) for v in face_bbox)
+
                     # 7) Format names and create paths
                     name_formatted = name.replace(' ', '_')
-                    image_name = f'{name_formatted}_{frame}_{video_date}.jpg'
+                    image_name = f'name={name_formatted}&video_date={video_date}&' \
+                                 f'frame={frame}&region={serialized_bbox}.jpg'
                     dir_path = path.join(conf.DATASET, name_formatted)
                     image_path = path.join(dir_path, image_name)
 
@@ -86,21 +104,9 @@ if __name__ == '__main__':
 
                     create_dir(dir_path)
 
-                    # Load the frame
-                    im = get_frame(video, frame)
-
-                    # 8) Get bboxes and landmarks
-                    bounding_boxes, landmarks = detect_faces(im)
-                    bbox_i = get_bbox_i_by_IoU(bounding_boxes, rect)
-
-                    # 9) Skip the image if no bbox was selected
-                    if bbox_i == -1:
-                        not_found_counter += 1
-                        continue
-
                     processed_counter += 1
                     # 10) Frontalize
-                    im = frontalize_face(im, landmarks[bbox_i])
+                    im = frontalize_face(im, face_landmarks)
 
                     # 9) Save the image
                     cv2.imwrite(image_path, im)
