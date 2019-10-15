@@ -1,9 +1,11 @@
 import json
 import re
 from os import listdir, path
-import numpy as np
+from os.path import join
+from time import time
 
 import cv2
+import numpy as np
 from mtcnn import detect_faces
 
 from config import Config
@@ -24,6 +26,9 @@ def get_frame(video, frame_id):
 
 if __name__ == '__main__':
     conf = Config()
+
+    create_dir(conf.LOG_DIR)
+    log_path = join(conf.LOG_DIR, f'process_dataset_{time()}.log')
 
     # 0) Extract the value of N out of dataset name if present.
     N = 1
@@ -61,7 +66,7 @@ if __name__ == '__main__':
         num_of_names = len(annotations.keys())
         # 5) Iterate over names
         for i, name in enumerate(annotations.keys()):
-            print(f'\t{i + 1}/{num_of_names} {name}', end='')
+            print(f'\t{i + 1}/{num_of_names} {name}', end='', flush=True)
             try:
                 # 6) Iterate over detections which belong to the name
                 for detection in annotations[name]['detections']:
@@ -82,6 +87,10 @@ if __name__ == '__main__':
 
                     # 9) Skip the image if no bbox was selected
                     if bbox_i == -1:
+                        with open(log_path, 'a') as f:
+                            f.write('{"video_name": '
+                                    f'"{video_name}", "name": "{name}", "frame": {frame}, "rect": {rect}'
+                                    '}\n')
                         not_found_counter += 1
                         continue
 

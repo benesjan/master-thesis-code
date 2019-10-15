@@ -9,6 +9,8 @@ class Config:
 
         self.DEVICE = DEVICE
 
+        self.LOG_DIR = f'{DATA_DIR}/log/'
+
         self.MODEL_PATH = f'{DATA_DIR}/checkpoints/resnet18_110.pth'
 
         self.DATASET = f'{DATA_DIR}/datasets/{DATASET_NAME}'
