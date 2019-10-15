@@ -39,7 +39,7 @@ if __name__ == '__main__':
     # 1) Get video names
     videos = listdir(conf.VIDEO_PATH)
 
-    processed_counter, skipped_counter, not_found_counter, N_counter = 0, 0, 0, 0
+    processed_counter, skipped_counter, not_found_counter, N_counter = 0, 0, 0, 1
     for video_name in videos:
         print(f'Processing {video_name}')
 
@@ -61,16 +61,14 @@ if __name__ == '__main__':
         num_of_names = len(annotations.keys())
         # 5) Iterate over names
         for i, name in enumerate(annotations.keys()):
-            print(f'\t{i + 1}/{num_of_names} {name}, num. of frames processed: {processed_counter}, '
-                  f'skipped: {skipped_counter}, not found by MTCNN: {not_found_counter},'
-                  f' total: {processed_counter + skipped_counter + not_found_counter}')
+            print(f'\t{i + 1}/{num_of_names} {name}', end='')
             try:
                 # 6) Iterate over detections which belong to the name
                 for detection in annotations[name]['detections']:
                     if N_counter != N:
                         N_counter += 1
                         continue
-                    N_counter = 0
+                    N_counter = 1
 
                     frame = detection['frame']
                     rect = detection['rect']
@@ -110,5 +108,9 @@ if __name__ == '__main__':
 
                     # 9) Save the image
                     cv2.imwrite(image_path, im)
+
+                print(f', num. of frames processed: {processed_counter}, '
+                      f'skipped: {skipped_counter}, not found by MTCNN: {not_found_counter},'
+                      f' total: {processed_counter + skipped_counter + not_found_counter}')
             except Exception as e:
                 print(f'An error occurred when processing image of {name}\n{e}')
