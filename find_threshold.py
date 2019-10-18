@@ -14,24 +14,27 @@ from config import Config
 
 
 def generate_intervals(max_val, interval_len):
-    vals = list(range(0, max_val, interval_len))
-    vals.append(max_val)
-    return [(vals[i], vals[i + 1]) for i in range(len(vals) - 1)]
+    interval_vals = list(range(0, max_val, interval_len))
+    interval_vals.append(max_val)
+    return [(interval_vals[i], interval_vals[i + 1]) for i in range(len(interval_vals) - 1)]
 
 
-def get_next_pair(intervals):
+def get_next(intervals, features, labels, thresholds):
     for i in range(len(intervals)):
         for j in range(i, len(intervals)):
-            yield (intervals[i], intervals[j])
+            yield (features[intervals[i][0]:intervals[i][1]],
+                   features[intervals[j][0]:intervals[j][1]],
+                   labels[intervals[i][0]:intervals[i][1]],
+                   labels[intervals[j][0]:intervals[j][1]],
+                   thresholds)
 
 
-def process_distances(interval_pair):
-    dists = cosine_distances(FEATURES[interval_pair[0][0]:interval_pair[0][1]],
-                             FEATURES[interval_pair[1][0]:interval_pair[1][1]])
-    vals = np.zeros((len(THRESHOLDS), 4), dtype=np.uint64)
+def process_distances(args):
+    # Arguments not expanded directly in the function call because of the limitations of pool.imap method
+    features1, features2, labels1, labels2, thresholds = args
 
-    labels1 = LABELS[interval_pair[0][0]:interval_pair[0][1]]
-    labels2 = LABELS[interval_pair[1][0]:interval_pair[1][1]]
+    dists = cosine_distances(features1, features2)
+    new_vals = np.zeros((len(thresholds), 4), dtype=np.uint64)
 
     indices = np.triu_indices_from(dists)
 
@@ -42,22 +45,22 @@ def process_distances(interval_pair):
 
     assert ref_labels.shape == dists.shape, "AssertionError: Dimension mismatch in process_distances"
 
-    for i, threshold in enumerate(THRESHOLDS):
+    for i, threshold in enumerate(thresholds):
         pred_labels = dists <= threshold
 
         # True Positive (TP): we predict a label of 1 (positive), and the true label is 1.
-        vals[i, 0] += np.sum(np.logical_and(pred_labels, ref_labels))
+        new_vals[i, 0] += np.sum(np.logical_and(pred_labels, ref_labels))
 
         # True Negative (TN): we predict a label of 0 (negative), and the true label is 0.
-        vals[i, 1] += np.sum(np.logical_and(pred_labels == False, ref_labels == False))
+        new_vals[i, 1] += np.sum(np.logical_and(pred_labels == False, ref_labels == False))
 
         # False Positive (FP): we predict a label of 1 (positive), but the true label is 0.
-        vals[i, 2] += np.sum(np.logical_and(pred_labels, ref_labels == False))
+        new_vals[i, 2] += np.sum(np.logical_and(pred_labels, ref_labels == False))
 
         # False Negative (FN): we predict a label of 0 (negative), but the true label is 1.
-        vals[i, 3] += np.sum(np.logical_and(pred_labels == False, ref_labels))
+        new_vals[i, 3] += np.sum(np.logical_and(pred_labels == False, ref_labels))
 
-    return vals
+    return new_vals
 
 
 if __name__ == "__main__":
@@ -80,7 +83,8 @@ if __name__ == "__main__":
         pool = mp.Pool(conf.CPU_COUNT)
 
         vals = np.zeros((len(THRESHOLDS), 4), dtype=np.uint64)
-        for processed_count, vals_x in enumerate(pool.imap(process_distances, get_next_pair(INTERVALS)), 1):
+        for processed_count, vals_x in enumerate(
+                pool.imap(process_distances, get_next(INTERVALS, FEATURES, LABELS, THRESHOLDS)), 1):
             vals += vals_x
 
             # Printout
