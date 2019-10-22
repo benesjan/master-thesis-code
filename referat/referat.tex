@@ -51,7 +51,8 @@ commentstyle=\it\footnotesize\color{Gray}
         \item Dále proiteruji před jednotlivá jména a detekce.
         \item Pomocí balíku \textit{mtcnn-pytorch} detekuji všechny obličeje ve snímku příslušícím k detekci z minulého
         bodu a zároveň k detekcím obdržím významné body obličeje ("landmarks").
-        \item Z nalezených detekcí vyberu tu, která má s původní detekcí největší "Intersection over Union (IoU)"
+        \item Z nalezených detekcí vyberu tu, která má s původní detekcí největší hodnotu
+        "Intersection over Union (IoU)" a zároveň tato hodnota musí být větší než práh \textbf{0.5}.
         \item Dále pomocí polohy významných bodů a předem definovaného kýženého rozložení významných bodů provedu
         takzvanou frontalizaci.
         Frontalizace využívá metody nejmenších čtverců k nalezení afinní transformace.
@@ -98,23 +99,26 @@ commentstyle=\it\footnotesize\color{Gray}
         \item Hodnoty pro všechny dvojice intervalů sečtu a uložím na disk pomocí modulu \textit{h5py}.
     \end{enumerate}
 
-    Níže vidíme grafy hodnot a F-míru.
-
     \begin{figure}[H]
         \centering
-        \includegraphics{out/thresholds_fav-128.eps}
-        \caption{Průběh naakumulovaných hodnot}
-        \label{fig:thresh}
-    \end{figure}
-
-    \newpage
-
-    \begin{figure}[H]
-        \centering
-        \includegraphics{out/prft_fav-128.eps}
+        \includegraphics{out/prft_fav-128_N1.eps}
         \caption{Průběh přesnosti, úplnosti a F-míry}
         \label{fig:prft}
     \end{figure}
+
+    Na obrázku~\ref{fig:prft} vidíme průběh přesnosti, úplnosti a F-míry v závislosti na prahu.
+    Jelikož přesnost je pro nulový práh jedna a zároveň hodnoty přesnosti s rostoucím prahem klesají, můžeme usoudit,
+    že v datech ani v algoritmu není chyba.
+
+    Optimální práh z hlediska F-míry je \textbf{0.62}.
+    Pro tento práh je dosažena hodnota \textbf{0.96}, což je dobrý výsledek.
+
+    \section{Závěr}
+    V této práci jsem naprogramoval sadu skriptů, které nejprve zpracují data do požadovaného formátu, dále data
+    předloží neuronové síti, na výstupech sítě vypočtou hodnoty potřebné pro vykreslení F-míry a na závěr
+    F-míru vykreslí.
+
+    Výsledné hodnoty odpovídají teorii, proto můžeme považovat výsledky za uspokojivé.
 
 
 \end{document}

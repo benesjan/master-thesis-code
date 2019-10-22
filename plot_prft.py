@@ -37,15 +37,6 @@ if __name__ == "__main__":
         thresholds = h5t['thresholds']
         vals = h5t['vals']
 
-        # Plot TP, TN, FP, FN
-        fig = pyplot.figure(0)
-        pyplot.plot(thresholds, vals)
-        pyplot.legend(['TP', 'TN', 'FP', 'FN'])
-        pyplot.xlabel('Threshold')
-        pyplot.xlim([thresholds[0], thresholds[-1]])
-        fig.savefig(join(target_dir, f'thresholds_{DATASET_NAME}.eps'), format='eps')
-        pyplot.close(fig)
-
         # Plot precision, recall, F1
         prf, optimal_val = compute_prfo(thresholds, vals)
 
