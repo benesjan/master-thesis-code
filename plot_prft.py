@@ -48,7 +48,7 @@ if __name__ == "__main__":
         pyplot.annotate('[%.2f, %.2f]' % (optimal_val[0], optimal_val[1]),
                         [optimal_val[0] + 0.1, optimal_val[1]])
 
-        pyplot.legend(['Precision', 'Recall', 'F1'])
+        pyplot.legend(['Precision', 'Recall', '$F_1$'])
         pyplot.xlim(thresholds[0], thresholds[-1])
         # pyplot.ylim([0, 1])
 
