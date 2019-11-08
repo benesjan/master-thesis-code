@@ -18,6 +18,7 @@ class Config:
         self.FEATURES = f'{DATA_DIR}/features_{DATASET_NAME}.h5'
 
         self.THRESHOLD_VALS = f'{DATA_DIR}/thresholds_{DATASET_NAME}.h5'
+        self.IOU_THRESHOLD_VALS = f'{DATA_DIR}/thresholds_iou_{DATASET_NAME}.h5'
 
         # Path to the unprocessed dataset
         self.VIDEO_PATH = f'{DATA_DIR}/datasets/fav_raw/videos/'
