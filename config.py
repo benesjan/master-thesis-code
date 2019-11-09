@@ -1,11 +1,11 @@
-from env_dependent import DEVICE, DATA_DIR, DATASET_NAME
+from env_dependent import DEVICE, DATA_DIR, DATASET_NAME, CPU_COUNT
 
 
 class Config:
 
     def __init__(self):
         self.BATCH_SIZE = 200
-        self.CPU_COUNT = 8
+        self.CPU_COUNT = CPU_COUNT
 
         self.DEVICE = DEVICE
 

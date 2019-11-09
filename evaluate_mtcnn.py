@@ -1,9 +1,7 @@
-import glob
 import json
 import multiprocessing as mp
 from os import listdir, path
 from sys import exit
-from time import time
 
 import cv2
 import h5py
@@ -23,6 +21,14 @@ def get_frame(video, frame_id):
     # read the image from the video
     _, im = video.read()
     return im
+
+
+def get_file_map(dir_path):
+    files = listdir(dir_path)
+    file_map = {}
+    for file in files:
+        file_map[file.split('&region')[0]] = file
+    return file_map
 
 
 def process_video(args):
@@ -52,6 +58,10 @@ def process_video(args):
     # 5) Iterate over names
     for i, name in enumerate(annotations.keys()):
         print(f'{video_name}, {i + 1}/{num_of_names} {name}')
+        name_formatted = name.replace(' ', '_')
+        name_dir = path.join(conf.DATASET, name_formatted)
+        file_map = get_file_map(name_dir)
+
         try:
             # 6) Iterate over detections which belong to the name
             for detection in annotations[name]['detections']:
@@ -59,13 +69,11 @@ def process_video(args):
                 frame = detection['frame']
                 rect = detection['rect']
 
-                name_formatted = name.replace(' ', '_')
-                image_name = f'name={name_formatted}&video_date={video_date}&frame={frame}&region*'
-                image_path = path.join(conf.DATASET, name_formatted, image_name)
-                fm = glob.glob(image_path)
-                if len(fm) == 1:
+                image_key = f'name={name_formatted}&video_date={video_date}&frame={frame}'
+
+                if image_key in file_map:
                     # Image already exists
-                    image_path = fm[0]
+                    image_path = path.join(conf.DATASET, name_formatted, file_map[image_key])
                     region = image_path.split('&region=')[1][:-4].split('_')
                     bboxes = [[float(x) for x in region]]
                 else:
@@ -104,6 +112,7 @@ def get_next(thresholds, video_path):
 
 if __name__ == '__main__':
     conf = Config()
+    PARALLELIZE = True
 
     if path.exists(conf.IOU_THRESHOLD_VALS):
         print(f'{conf.IOU_THRESHOLD_VALS} already exists')
@@ -113,11 +122,14 @@ if __name__ == '__main__':
     # Array with TP and FN as columns, threshold values as rows
     vals = np.zeros((len(THRESHOLDS), 2), dtype=np.uint64)
 
-    pool = mp.Pool(conf.CPU_COUNT)
-    start_time = time()
+    if PARALLELIZE:
+        pool = mp.Pool(conf.CPU_COUNT)
 
-    for vals_x in pool.imap(process_video, get_next(THRESHOLDS, conf.VIDEO_PATH)):
-        vals += vals_x
+        for vals_x in pool.imap(process_video, get_next(THRESHOLDS, conf.VIDEO_PATH)):
+            vals += vals_x
+    else:
+        for args in get_next(THRESHOLDS, conf.VIDEO_PATH):
+            vals += process_video(args)
 
     # 1) Open the h5 file
     with h5py.File(conf.IOU_THRESHOLD_VALS, 'w') as h5t:
