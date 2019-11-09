@@ -11,7 +11,7 @@ import numpy as np
 from mtcnn import detect_faces
 
 from config import Config
-from data_processing.mtcnn_utils import get_bbox_i_by_IoU
+from data_processing.mtcnn_utils import get_bbox_i_by_IoU, _bb_intersection_over_union
 
 
 # video - the opened video object
@@ -26,11 +26,12 @@ def get_frame(video, frame_id):
 
 
 def process_video(args):
-    video_name, THRESHOLDS = args
+    video_name, thresholds = args
+    step = thresholds[1]
     print(f'Processing {video_name}')
 
     # Array with TP and FN as columns, threshold values as rows
-    values = np.zeros((len(THRESHOLDS), 2), dtype=np.uint64)
+    values = np.zeros((len(thresholds), 2), dtype=np.uint64)
 
     # Used in file name
     video_date = video_name.split('_')[2]
@@ -74,12 +75,18 @@ def process_video(args):
                     # 8) Get bboxes and landmarks
                     bboxes, _ = detect_faces(im)
 
-                for j, threshold in enumerate(THRESHOLDS):
-                    bbox_i = get_bbox_i_by_IoU(bboxes, rect, threshold=threshold)
-                    if bbox_i == -1:
-                        values[j, 1] += 1
-                    else:
-                        values[j, 0] += 1
+                bbox_i = get_bbox_i_by_IoU(bboxes, rect, threshold=0)
+                if bbox_i == -1:
+                    #     No intersection, FN for all the thresholds
+                    values[:, 1] += 1
+                else:
+                    bbox = bboxes[bbox_i]
+                    IoU = _bb_intersection_over_union(bbox, rect)
+                    threshold_i = int(IoU / step)
+                    # TP
+                    values[:threshold_i + 1, 0] += 1
+                    # FN
+                    values[threshold_i + 1:, 1] += 1
 
         except Exception as e:
             print(f'An error occurred when processing image of {name}\n{e}')
