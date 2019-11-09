@@ -24,8 +24,10 @@ def get_frame(video, frame_id):
 
 
 def get_file_map(dir_path):
-    files = listdir(dir_path)
     file_map = {}
+    if not path.exists(dir_path):
+        return file_map
+    files = listdir(dir_path)
     for file in files:
         file_map[file.split('&region')[0]] = file
     return file_map
