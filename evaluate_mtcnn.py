@@ -6,10 +6,9 @@ from sys import exit
 import cv2
 import h5py
 import numpy as np
-from mtcnn import detect_faces
 
 from config import Config
-from data_processing.mtcnn_utils import get_bbox_i_by_IoU, _bb_intersection_over_union
+from data_processing.mtcnn_utils import _bb_intersection_over_union
 
 
 # video - the opened video object
@@ -33,83 +32,41 @@ def get_file_map(dir_path):
     return file_map
 
 
-def process_video(args):
-    video_name, thresholds = args
+def process_batch(args):
+    batch, thresholds = args
     step = thresholds[1]
-    print(f'Processing {video_name}')
 
     # Array with TP and FN as columns, threshold values as rows
     values = np.zeros((len(thresholds), 2), dtype=np.uint64)
 
-    # Used in file name
-    video_date = video_name.split('_')[2]
-
-    # 2) Load the annotations
-    with open(conf.ANNOTATIONS_PATH + video_name + '_people.json', 'r') as f:
-        annotations = json.load(f)
-
-    # 3) load the video
-    video = cv2.VideoCapture(conf.VIDEO_PATH + video_name)
-
-    # 4) check if the video file opened successfully, if not continue with another one
-    if not video.isOpened():
-        print(f'The videofile {video_name} could not be opened!')
-        return values
-
-    num_of_names = len(annotations.keys())
-    # 5) Iterate over names
-    for i, name in enumerate(annotations.keys()):
-        print(f'{video_name}, {i + 1}/{num_of_names} {name}')
-        name_formatted = name.replace(' ', '_')
-        name_dir = path.join(conf.DATASET, name_formatted)
-        file_map = get_file_map(name_dir)
-
-        try:
-            # 6) Iterate over detections which belong to the name
-            for detection in annotations[name]['detections']:
-
-                frame = detection['frame']
-                rect = detection['rect']
-
-                image_key = f'name={name_formatted}&video_date={video_date}&frame={frame}'
-
-                if image_key in file_map:
-                    # Image already exists
-                    image_path = path.join(conf.DATASET, name_formatted, file_map[image_key])
-                    region = image_path.split('&region=')[1][:-4].split('_')
-                    bboxes = [[float(x) for x in region]]
-                else:
-                    # Load the frame
-                    im = get_frame(video, frame)
-
-                    # 8) Get bboxes and landmarks
-                    bboxes, _ = detect_faces(im)
-
-                bbox_i = get_bbox_i_by_IoU(bboxes, rect, threshold=0)
-                if bbox_i == -1:
-                    #     No intersection, FN for all the thresholds
-                    values[:, 1] += 1
-                else:
-                    bbox = bboxes[bbox_i]
-                    IoU = _bb_intersection_over_union(bbox, rect)
-                    threshold_i = int(IoU / step)
-                    # TP
-                    values[:threshold_i + 1, 0] += 1
-                    # FN
-                    values[threshold_i + 1:, 1] += 1
-
-        except Exception as e:
-            print(f'An error occurred when processing image of {name}\n{e}')
+    # 6) Iterate over detections which belong to the name
+    for boxes in batch:
+        if len(boxes['mtcnn']) == 0:
+            #     No intersection, FN for all the thresholds
+            values[:, 1] += 1
+        else:
+            IoU = _bb_intersection_over_union(boxes['mtcnn'], boxes['orig'])
+            threshold_i = int(IoU / step)
+            # TP
+            values[:threshold_i + 1, 0] += 1
+            # FN
+            values[threshold_i + 1:, 1] += 1
 
     return values
 
 
-def get_next(thresholds, video_path):
+def get_next(mtcnn_preds, thresholds):
     # 1) Get video names
-    videos = listdir(video_path)
-
-    for video_name in videos:
-        yield video_name, thresholds
+    batch_size = 1000
+    batch = []
+    with open(mtcnn_preds, 'r') as mtcnn_file:
+        for i, line in enumerate(mtcnn_file):
+            boxes = json.loads(line)
+            batch.append(boxes)
+            if i % batch_size == 0:
+                yield batch, thresholds
+                batch = []
+    yield batch, thresholds
 
 
 if __name__ == '__main__':
@@ -127,11 +84,11 @@ if __name__ == '__main__':
     if PARALLELIZE:
         pool = mp.Pool(conf.CPU_COUNT)
 
-        for vals_x in pool.imap(process_video, get_next(THRESHOLDS, conf.VIDEO_PATH)):
+        for vals_x in pool.imap(process_batch, get_next(conf.MTCNN_PREDS, THRESHOLDS)):
             vals += vals_x
     else:
-        for args in get_next(THRESHOLDS, conf.VIDEO_PATH):
-            vals += process_video(args)
+        for args in get_next(conf.MTCNN_PREDS, THRESHOLDS):
+            vals += process_batch(args)
 
     # 1) Open the h5 file
     with h5py.File(conf.IOU_THRESHOLD_VALS, 'w') as h5t:

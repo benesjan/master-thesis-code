@@ -38,7 +38,7 @@ if __name__ == '__main__':
         print(f"Target file containing values already exists on path {conf.MTCNN_PREDS}.\nEXITING")
         exit(0)
 
-    with open(conf.MTCNN_PREDS, 'a') as mtcnn_file:
+    with open(conf.MTCNN_PREDS, 'w') as mtcnn_file:
         for video_name in listdir(conf.VIDEO_PATH):
             print(f'Processing {video_name}')
 
