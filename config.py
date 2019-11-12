@@ -17,6 +17,8 @@ class Config:
 
         self.FEATURES = f'{DATA_DIR}/features_{DATASET_NAME}.h5'
 
+        self.MTCNN_PREDS = f'{DATA_DIR}/mtcnn_preds.txt'
+
         self.THRESHOLD_VALS = f'{DATA_DIR}/thresholds_{DATASET_NAME}.h5'
         self.IOU_THRESHOLD_VALS = f'{DATA_DIR}/thresholds_iou_{DATASET_NAME}.h5'
 
