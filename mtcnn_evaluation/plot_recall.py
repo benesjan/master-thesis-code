@@ -10,6 +10,8 @@ from utils import create_dir
 if __name__ == "__main__":
     conf = Config()
     target_dir = 'out'
+    chosen_threshold = 0.5
+
     create_dir(target_dir)
 
     # 1) Open the h5 file
@@ -27,6 +29,13 @@ if __name__ == "__main__":
         fig = pyplot.figure(1)
         pyplot.grid()
         pyplot.plot(thresholds, recall)
+
+        # Highlight chosen threshold value
+        threshold_val = [chosen_threshold, recall[np.where(thresholds[:] == chosen_threshold)[0][0]]]
+
+        pyplot.scatter(threshold_val[0], threshold_val[1], marker="x", s=300, linewidth=1.3, c='purple')
+        pyplot.annotate('[%.2f, %.2f]' % (threshold_val[0], threshold_val[1]),
+                        [threshold_val[0] + 0.1, threshold_val[1]])
 
         pyplot.legend(['Recall'])
         pyplot.xlim(thresholds[0], thresholds[-1])
