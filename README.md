@@ -1,4 +1,9 @@
-##Setup
+## Introduction
+
+A facial recognition pipeline implemented in Python and PyTorch as a part of my
+[master thesis](https://github.com/benesjan/master-thesis).
+
+## Setup
 
 1. Install the dependencies with the following command:
     ```bash
@@ -7,7 +12,7 @@
 2. Edit paths in the config.py file. Make sure corresponding directories exist
 (if it's not the case results of computations might not be saved)
 
-##Execution
+## Execution
 
 It's important to note that all these scripts have to be executed in the same order.
 In case the dataset is already in the desired format of *dataset/name/image_128x128.jpg*
