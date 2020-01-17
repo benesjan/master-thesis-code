@@ -1,3 +1,7 @@
+##Introduction
+A facial recognition pipeline implemented in Python and PyTorch for my
+[master thesis](https://github.com/benesjan/master-thesis).
+
 ##Setup
 
 1. Install the dependencies with the following command:
